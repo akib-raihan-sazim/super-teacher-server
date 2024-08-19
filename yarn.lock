@@ -1630,7 +1630,7 @@
     tsconfig-paths "4.2.0"
     yargs "17.7.2"
 
-"@mikro-orm/core@6.2.9", "@mikro-orm/core@~6.2.0":
+"@mikro-orm/core@6.2.9":
   version "6.2.9"
   resolved "https://registry.yarnpkg.com/@mikro-orm/core/-/core-6.2.9.tgz#d466add0ec7d528f881dbfa0c88199a228f0a2ac"
   integrity sha512-fzeg8qNwNr0f9embDhs0L75EBC8ivIOsK1GGPXe48Ab+P0Vmv1qCskSP7/vNDsz4s1xDu0h0l6fIsv1N7j4jKQ==
@@ -1641,6 +1641,19 @@
     fs-extra "11.2.0"
     globby "11.1.0"
     mikro-orm "6.2.9"
+    reflect-metadata "0.2.2"
+
+"@mikro-orm/core@~6.3.6":
+  version "6.3.6"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/core/-/core-6.3.6.tgz#5f79973403a1bf387502115cc584e1457fdf3060"
+  integrity sha512-zIcUT9Q5U4n0bFBybrUhLNZWaKv8OZIZwuukBNFQChy3Y5ziLwGpomsPWWGxuh/YZJbgj+bbYhmlMYy0hTyzeQ==
+  dependencies:
+    dataloader "2.2.2"
+    dotenv "16.4.5"
+    esprima "4.0.1"
+    fs-extra "11.2.0"
+    globby "11.1.0"
+    mikro-orm "6.3.6"
     reflect-metadata "0.2.2"
 
 "@mikro-orm/knex@6.2.9":
@@ -7068,6 +7081,11 @@ mikro-orm@6.2.9:
   version "6.2.9"
   resolved "https://registry.yarnpkg.com/mikro-orm/-/mikro-orm-6.2.9.tgz#c126966de59e3e179f104004a3f8ecad71aac19e"
   integrity sha512-zpP8D7Lw8Q2WYwd43iFQI+5e0zPUM+vEAAyJaGE87RzSiQwchqZNPuV/H74STNJYqj8mLSvwZxFvRzrQXsCRRw==
+
+mikro-orm@6.3.6:
+  version "6.3.6"
+  resolved "https://registry.yarnpkg.com/mikro-orm/-/mikro-orm-6.3.6.tgz#6956cbbc201e3e1ea9f557aeb09e53ebad3d5759"
+  integrity sha512-1YzHYYiagqw6h5SqnrZ40XtudiqViENo5QlI0u9fRQHb0frU+UEZGHrSZWFeaqU4NHVSW3V6YRalk778RARzaw==
 
 mime-db@1.52.0:
   version "1.52.0"
