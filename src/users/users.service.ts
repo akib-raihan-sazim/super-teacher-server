@@ -42,7 +42,7 @@ export class UsersService {
     return user;
   }
 
-  async createOne(registerUserDto: RegisterUserDto, roleName = EUserRole.ADMIN) {
+  async createOne(registerUserDto: RegisterUserDto, roleName = EUserRole.STUDENT) {
     const existingUser = await this.usersRepository.findOne({
       email: registerUserDto.email,
     });

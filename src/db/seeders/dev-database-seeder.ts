@@ -17,8 +17,8 @@ export class DevDatabaseSeeder extends Seeder {
   }
 
   createRoles(em: EntityManager) {
-    const superUserRole = new Role(EUserRole.SUPER_USER);
-    const adminRole = new Role(EUserRole.ADMIN);
+    const superUserRole = new Role(EUserRole.TEACHER);
+    const adminRole = new Role(EUserRole.STUDENT);
 
     em.persist([superUserRole, adminRole]);
   }

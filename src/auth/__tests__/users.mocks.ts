@@ -10,7 +10,7 @@ export const MOCK_USER = new User(
   "$argon2i$v=19$m=16,t=2,p=1$MTIzNDU2Nzg$0UUB6E64WB9X/Tp5NC4DKw",
 );
 export const MOCK_USER_PROFILE = new UserProfile(faker.person.firstName(), faker.person.lastName());
-export const MOCK_USER_ROLE = new Role(EUserRole.ADMIN);
+export const MOCK_USER_ROLE = new Role(EUserRole.TEACHER);
 MOCK_USER_ROLE.id = 1;
 
 MOCK_USER.userProfile = MOCK_USER_PROFILE;

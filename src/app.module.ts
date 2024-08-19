@@ -7,7 +7,6 @@ import { OpenTelemetryModule } from "@metinseylan/nestjs-opentelemetry";
 
 import { AuthModule } from "./auth/auth.module";
 import { AppLoggerMiddleware } from "./common/middleware/request-logger.middleware";
-import { validate } from "./common/validators/env.validator";
 import ormConfig from "./db/db.config";
 import { FileUploadsModule } from "./file-uploads/file-uploads.module";
 import { HealthModule } from "./health/health.module";
@@ -23,7 +22,6 @@ import { WebsocketExampleModule } from "./websocket-example/websocket-example.mo
     ConfigModule.forRoot({
       ignoreEnvFile: false,
       isGlobal: true,
-      validate,
     }),
 
     OpenTelemetryModule.forRoot({
