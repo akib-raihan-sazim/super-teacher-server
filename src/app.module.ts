@@ -5,8 +5,11 @@ import { MikroOrmModule } from "@mikro-orm/nestjs";
 
 import { OpenTelemetryModule } from "@metinseylan/nestjs-opentelemetry";
 
+import { AuthModule } from "./auth/auth.module";
 import { AppLoggerMiddleware } from "./common/middleware/request-logger.middleware";
 import ormConfig from "./db/db.config";
+import { StudentsModule } from "./students/students.module";
+import { UsersModule } from "./users/users.module";
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import ormConfig from "./db/db.config";
     OpenTelemetryModule.forRoot({
       serviceName: "Project Backend",
     }),
+    UsersModule,
+    AuthModule,
+    StudentsModule,
   ],
   controllers: [],
   providers: [Logger],

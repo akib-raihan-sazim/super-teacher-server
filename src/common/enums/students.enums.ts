@@ -7,4 +7,5 @@ export enum EEducationLevel {
 export enum EMedium {
   ENGLISH = "english",
   BANGLA = "bangla",
+  NONE = "",
 }
