@@ -9,6 +9,7 @@ import { AuthModule } from "./auth/auth.module";
 import { AppLoggerMiddleware } from "./common/middleware/request-logger.middleware";
 import ormConfig from "./db/db.config";
 import { StudentsModule } from "./students/students.module";
+import { UniqueCodeModule } from "./unique-code/unique-code.module";
 import { UsersModule } from "./users/users.module";
 
 @Module({
@@ -18,6 +19,7 @@ import { UsersModule } from "./users/users.module";
     ConfigModule.forRoot({
       ignoreEnvFile: false,
       isGlobal: true,
+      envFilePath: [".env.development.local"],
     }),
 
     OpenTelemetryModule.forRoot({
@@ -26,6 +28,7 @@ import { UsersModule } from "./users/users.module";
     UsersModule,
     AuthModule,
     StudentsModule,
+    UniqueCodeModule,
   ],
   controllers: [],
   providers: [Logger],
