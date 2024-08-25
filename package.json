@@ -37,7 +37,8 @@
     "test:watch": "dotenv -e ./.env.test.local -- jest --watch",
     "test:cov": "dotenv -e ./.env.test.local -- jest --coverage",
     "test:debug": "dotenv -e ./.env.test.local -- node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "dotenv -e ./.env.test.local -- jest --config ./test/jest-e2e.json"
+    "test:e2e": "dotenv -e ./.env.test.local -- jest --config ./test/jest-e2e.json",
+    "generate-code": "dotenv -e ./.env.development.local -- ts-node -r tsconfig-paths/register src/cli.ts generate-unique-code"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.485.0",
@@ -68,6 +69,7 @@
     "class-validator": "^0.14.0",
     "dayjs": "^1.11.10",
     "helmet": "^7.1.0",
+    "nest-commander": "^3.15.0",
     "nest-winston": "^1.8.0",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
