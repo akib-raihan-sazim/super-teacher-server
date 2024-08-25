@@ -7,6 +7,12 @@ export class RegisterStudentDto extends CreateUserDto {
   @IsEnum(EEducationLevel)
   educationLevel!: EEducationLevel;
 
+  @IsString()
+  phoneNo!: string;
+
+  @IsString()
+  address!: string;
+
   @IsOptional()
   @IsEnum(EMedium)
   medium?: EMedium;

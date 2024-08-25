@@ -24,6 +24,12 @@ export class Student extends CustomBaseEntity {
   @Property({ fieldName: "education_level" })
   educationLevel!: EEducationLevel;
 
+  @Property({ fieldName: "phone_number" })
+  phoneNo!: string;
+
+  @Property({ fieldName: "address" })
+  address!: string;
+
   @Enum(() => EMedium)
   @Property({ fieldName: "medium", nullable: true })
   medium?: EMedium;

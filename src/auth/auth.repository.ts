@@ -38,6 +38,8 @@ export class AuthRepository {
         degree: registerStudentDto.degree,
         degreeName: registerStudentDto.degreeName,
         semester: registerStudentDto.semester,
+        phoneNo: registerStudentDto.phoneNo,
+        address: registerStudentDto.address,
         user: user,
       });
 

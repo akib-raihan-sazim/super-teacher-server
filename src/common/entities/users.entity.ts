@@ -19,12 +19,6 @@ export class User extends CustomBaseEntity {
   @Property({ unique: true, fieldName: "email" })
   email!: string;
 
-  @Property({ fieldName: "phone_number" })
-  phoneNo!: string;
-
-  @Property({ fieldName: "address" })
-  address!: string;
-
   @Property({ fieldName: "password" })
   password!: string;
 

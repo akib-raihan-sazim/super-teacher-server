@@ -13,12 +13,6 @@ export class CreateUserDto {
   email!: string;
 
   @IsString()
-  phoneNo!: string;
-
-  @IsString()
-  address!: string;
-
-  @IsString()
   password!: string;
 
   @IsEnum(EUserType)
