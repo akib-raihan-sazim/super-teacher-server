@@ -1,15 +1,16 @@
-import { Entity, PrimaryKey, Property, OneToOne } from "@mikro-orm/core";
+import { Entity, PrimaryKey, Property, OneToOne, EntityRepositoryType } from "@mikro-orm/core";
+
+import { TeachersRepository } from "@/teachers/teachers.repository";
 
 import { CustomBaseEntity } from "./custom-base.entity";
 import { User } from "./users.entity";
 
-@Entity({ tableName: "teachers" })
+@Entity({ tableName: "teachers", repository: () => TeachersRepository })
 export class Teacher extends CustomBaseEntity {
+  [EntityRepositoryType]?: TeachersRepository;
+
   @PrimaryKey()
   id!: number;
-
-  @Property({ fieldName: "unique_code", unique: true })
-  uniqueCode!: string;
 
   @Property({ fieldName: "highest_education_level" })
   highestEducationLevel!: string;
@@ -17,8 +18,8 @@ export class Teacher extends CustomBaseEntity {
   @Property({ fieldName: "major_subject" })
   majorSubject!: string;
 
-  @Property({ fieldName: "subjects_to_teach" })
-  subjectToTeach!: string[];
+  @Property({ fieldName: "subjects_to_teach", type: "array" })
+  subjectsToTeach!: string[];
 
   @OneToOne(() => User, (user) => user.teacher, { owner: true })
   user!: User;
