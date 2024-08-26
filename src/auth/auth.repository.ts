@@ -77,9 +77,4 @@ export class AuthRepository {
     });
     return user;
   }
-
-  async findUserByEmail(email: string): Promise<User | null> {
-    const user = await this.em.findOne(User, { email });
-    return user;
-  }
 }

@@ -11,6 +11,7 @@ import { EntityManager } from "@mikro-orm/core";
 import * as bcrypt from "bcrypt";
 
 import { User } from "@/common/entities/users.entity";
+import { UsersService } from "@/users/users.service";
 
 import { UniqueCodeService } from "../unique-code/unique-code.service";
 import { LoginDto, RegisterStudentDto, RegisterTeacherDto } from "./auth.dtos";
@@ -22,6 +23,7 @@ export class AuthService {
   constructor(
     private readonly authRepository: AuthRepository,
     private readonly uniqueCodeService: UniqueCodeService,
+    private readonly userService: UsersService,
     private readonly jwtService: JwtService,
     private readonly em: EntityManager,
   ) {}
@@ -34,7 +36,7 @@ export class AuthService {
   async registerStudent(
     registerStudentDto: RegisterStudentDto,
   ): Promise<{ user: User; token: string }> {
-    const existingUser = await this.authRepository.findUserByEmail(registerStudentDto.email);
+    const existingUser = await this.userService.findUserByEmail(registerStudentDto.email);
     if (existingUser) {
       throw new ConflictException("Email already in use");
     }
@@ -47,7 +49,7 @@ export class AuthService {
   async registerTeacher(
     registerTeacherDto: RegisterTeacherDto,
   ): Promise<{ user: User; token: string }> {
-    const existingUser = await this.authRepository.findUserByEmail(registerTeacherDto.email);
+    const existingUser = await this.userService.findUserByEmail(registerTeacherDto.email);
     if (existingUser) {
       throw new ConflictException("Email already in use");
     }
@@ -73,7 +75,7 @@ export class AuthService {
 
   async login(loginDto: LoginDto): Promise<{ user: User; token: string }> {
     const { email, password } = loginDto;
-    const user = await this.authRepository.findUserByEmail(email);
+    const user = await this.userService.findUserByEmail(email);
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException("Invalid credentials");
     }
@@ -82,7 +84,7 @@ export class AuthService {
   }
 
   async validateUser(email: string, password?: string): Promise<User | null> {
-    const user = await this.authRepository.findUserByEmail(email);
+    const user = await this.userService.findUserByEmail(email);
     if (!user) {
       return null;
     }
