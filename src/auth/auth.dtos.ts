@@ -1,4 +1,4 @@
-import { IsArray, IsEnum, IsOptional, IsString } from "class-validator";
+import { IsArray, IsEmail, IsEnum, IsOptional, IsString } from "class-validator";
 
 import { EEducationLevel, EMedium } from "@/common/enums/students.enums";
 import { CreateUserDto } from "@/users/users.dtos";
@@ -47,4 +47,12 @@ export class RegisterTeacherDto extends CreateUserDto {
   @IsArray()
   @IsString({ each: true })
   subjectsToTeach!: string[];
+}
+
+export class LoginDto {
+  @IsEmail()
+  email!: string;
+
+  @IsString()
+  password!: string;
 }
