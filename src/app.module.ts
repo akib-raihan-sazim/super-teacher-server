@@ -1,5 +1,6 @@
-import { Logger, MiddlewareConsumer, Module } from "@nestjs/common";
+import { ClassSerializerInterceptor, Logger, MiddlewareConsumer, Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { APP_INTERCEPTOR, Reflector } from "@nestjs/core";
 
 import { MikroOrmModule } from "@mikro-orm/nestjs";
 
@@ -31,7 +32,14 @@ import { UsersModule } from "./users/users.module";
     UniqueCodeModule,
   ],
   controllers: [],
-  providers: [Logger],
+  providers: [
+    Logger,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ClassSerializerInterceptor,
+    },
+    Reflector,
+  ],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer): void {
