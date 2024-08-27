@@ -16,8 +16,8 @@ export class AuthController {
 
   @Post("register/teacher")
   async registerTeacher(@Body() registerTeacherDto: RegisterTeacherDto) {
-    const { user, token } = await this.authService.registerTeacher(registerTeacherDto);
-    return { user, token };
+    const { user, token, codeUsage } = await this.authService.registerTeacher(registerTeacherDto);
+    return { user, token, codeUsage };
   }
 
   @UseGuards(AuthGuard("local"))

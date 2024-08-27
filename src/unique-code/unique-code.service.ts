@@ -2,6 +2,8 @@ import { Injectable, BadRequestException } from "@nestjs/common";
 
 import { EntityManager } from "@mikro-orm/core";
 
+import { UniqueCode } from "@/common/entities/unique_codes.entity";
+
 import { UniqueCodeRepository } from "./unique-code.repository";
 
 @Injectable()
@@ -25,10 +27,14 @@ export class UniqueCodeService {
     email: string,
     code: string,
     em: EntityManager,
-  ): Promise<void> {
+  ): Promise<UniqueCode> {
     const uniqueCode = await this.uniqueCodeRepository.findByCode(code, em);
     if (!uniqueCode) {
-      throw new BadRequestException("Invalid unique code");
+      throw new BadRequestException({
+        message: "Invalid unique code",
+        usageCount: 0,
+        remainingUses: 0,
+      });
     }
 
     if (uniqueCode.usageCount >= 3) {
@@ -41,8 +47,13 @@ export class UniqueCodeService {
     await this.uniqueCodeRepository.incrementUsageCount(uniqueCode, em);
 
     if (uniqueCode.email !== email) {
-      throw new BadRequestException("Unique code does not match the provided email");
+      throw new BadRequestException({
+        message: "Invalid unique code",
+        usageCount: uniqueCode.usageCount,
+        remainingUses: 3 - uniqueCode.usageCount,
+      });
     }
+    return uniqueCode;
   }
 
   private generateRandomCode(): string {

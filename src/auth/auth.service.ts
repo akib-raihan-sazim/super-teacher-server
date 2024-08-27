@@ -48,7 +48,7 @@ export class AuthService {
 
   async registerTeacher(
     registerTeacherDto: RegisterTeacherDto,
-  ): Promise<{ user: User; token: string }> {
+  ): Promise<{ user: User; token: string; codeUsage: number }> {
     const existingUser = await this.userService.findUserByEmail(registerTeacherDto.email);
     if (existingUser) {
       throw new ConflictException("Email already in use");
@@ -57,14 +57,14 @@ export class AuthService {
     const scopedEm = this.em.fork();
 
     try {
-      await this.uniqueCodeService.validateAndIncrementUniqueCode(
+      const uniqueCode = await this.uniqueCodeService.validateAndIncrementUniqueCode(
         registerTeacherDto.email,
         registerTeacherDto.uniqueCode,
         scopedEm,
       );
       const user = await this.authRepository.createTeacher(registerTeacherDto);
       const token = this.createToken(user);
-      return { user, token };
+      return { user, token, codeUsage: uniqueCode.usageCount };
     } catch (error) {
       if (error instanceof BadRequestException && error.message.includes("deleted")) {
         throw new BadRequestException("Unique code has expired. Please generate a new code.");
