@@ -14,7 +14,7 @@ import { User } from "@/common/entities/users.entity";
 import { UsersService } from "@/users/users.service";
 
 import { UniqueCodeService } from "../unique-code/unique-code.service";
-import { LoginDto, RegisterStudentDto, RegisterTeacherDto } from "./auth.dtos";
+import { AuthResponseDto, LoginDto, RegisterStudentDto, RegisterTeacherDto } from "./auth.dtos";
 import { IJwtPayload } from "./auth.interfaces";
 import { AuthRepository } from "./auth.repository";
 
@@ -33,9 +33,7 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
-  async registerStudent(
-    registerStudentDto: RegisterStudentDto,
-  ): Promise<{ user: User; token: string }> {
+  async registerStudent(registerStudentDto: RegisterStudentDto): Promise<AuthResponseDto> {
     const existingUser = await this.userService.findUserByEmail(registerStudentDto.email);
     if (existingUser) {
       throw new ConflictException("Email already in use");
@@ -43,12 +41,10 @@ export class AuthService {
 
     const user = await this.authRepository.createStudent(registerStudentDto);
     const token = this.createToken(user);
-    return { user, token };
+    return new AuthResponseDto(user, token);
   }
 
-  async registerTeacher(
-    registerTeacherDto: RegisterTeacherDto,
-  ): Promise<{ user: User; token: string; codeUsage: number }> {
+  async registerTeacher(registerTeacherDto: RegisterTeacherDto): Promise<AuthResponseDto> {
     const existingUser = await this.userService.findUserByEmail(registerTeacherDto.email);
     if (existingUser) {
       throw new ConflictException("Email already in use");
@@ -57,14 +53,14 @@ export class AuthService {
     const scopedEm = this.em.fork();
 
     try {
-      const uniqueCode = await this.uniqueCodeService.validateAndIncrementUniqueCode(
+      await this.uniqueCodeService.validateAndIncrementUniqueCode(
         registerTeacherDto.email,
         registerTeacherDto.uniqueCode,
         scopedEm,
       );
       const user = await this.authRepository.createTeacher(registerTeacherDto);
       const token = this.createToken(user);
-      return { user, token, codeUsage: uniqueCode.usageCount };
+      return new AuthResponseDto(user, token);
     } catch (error) {
       if (error instanceof BadRequestException && error.message.includes("deleted")) {
         throw new BadRequestException("Unique code has expired. Please generate a new code.");
@@ -73,14 +69,14 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto): Promise<{ user: User; token: string }> {
+  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
     const { email, password } = loginDto;
     const user = await this.userService.findUserByEmail(email);
     if (!user || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException("Invalid credentials");
     }
     const token = this.createToken(user);
-    return { user, token };
+    return new AuthResponseDto(user, token);
   }
 
   async validateUser(email: string, password?: string): Promise<User | null> {
