@@ -1,8 +1,11 @@
-import { Controller, Post, Body, UseGuards } from "@nestjs/common";
+import { Controller, Post, Body, UseGuards, Get } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 
 import { AuthResponseDto, LoginDto, RegisterStudentDto, RegisterTeacherDto } from "./auth.dtos";
+import { ITokenizedUser } from "./auth.interfaces";
 import { AuthService } from "./auth.service";
+import { CurrentUser } from "./decorators/current-user.decorator";
+import { JwtAuthGuard } from "./guards/jwt-auth.guard";
 
 @Controller("auth")
 export class AuthController {
@@ -22,5 +25,11 @@ export class AuthController {
   @Post("login")
   login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
     return this.authService.login(loginDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get("me")
+  me(@CurrentUser() user: ITokenizedUser): ITokenizedUser {
+    return user;
   }
 }
