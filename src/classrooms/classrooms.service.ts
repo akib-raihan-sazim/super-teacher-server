@@ -47,4 +47,22 @@ export class ClassroomsService {
       userId: user.id,
     });
   }
+
+  async getClassroomsForUser(userId: number): Promise<Classroom[]> {
+    const user = await this.em.findOne(User, { id: userId }, { populate: ["teacher"] });
+    if (!user) {
+      throw new NotFoundException("User not found");
+    }
+
+    const classrooms = await this.em.find(
+      Classroom,
+      { teacher: user.teacher },
+      {
+        orderBy: { classTime: "DESC" },
+        populate: ["teacher"],
+      },
+    );
+    // TODO: query for fetching classrooms that a student is enrolled in.
+    return classrooms;
+  }
 }
