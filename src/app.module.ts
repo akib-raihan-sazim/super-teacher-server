@@ -7,6 +7,7 @@ import { MikroOrmModule } from "@mikro-orm/nestjs";
 import { OpenTelemetryModule } from "@metinseylan/nestjs-opentelemetry";
 
 import { AuthModule } from "./auth/auth.module";
+import { ClassroomsModule } from "./classrooms/classrooms.module";
 import { AppLoggerMiddleware } from "./common/middleware/request-logger.middleware";
 import ormConfig from "./db/db.config";
 import { StudentsModule } from "./students/students.module";
@@ -30,6 +31,7 @@ import { UsersModule } from "./users/users.module";
     AuthModule,
     StudentsModule,
     UniqueCodeModule,
+    ClassroomsModule,
   ],
   controllers: [],
   providers: [
