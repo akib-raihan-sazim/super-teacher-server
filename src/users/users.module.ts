@@ -13,6 +13,6 @@ import { UsersService } from "./users.service";
   imports: [MikroOrmModule.forFeature([User, Student])],
   providers: [UsersService, UserRepository],
   controllers: [UsersController],
-  exports: [MikroOrmModule.forFeature([User, Student]), UsersService],
+  exports: [MikroOrmModule.forFeature([User, Student]), UsersService, UserRepository],
 })
 export class UsersModule {}

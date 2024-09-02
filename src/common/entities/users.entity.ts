@@ -1,12 +1,23 @@
-import { Entity, Enum, OneToOne, PrimaryKey, Property } from "@mikro-orm/core";
+import {
+  Entity,
+  EntityRepositoryType,
+  Enum,
+  OneToOne,
+  PrimaryKey,
+  Property,
+} from "@mikro-orm/core";
+
+import { UserRepository } from "@/users/users.repository";
 
 import { EUserType } from "../enums/users.enums";
 import { CustomBaseEntity } from "./custom-base.entity";
 import { Student } from "./students.entity";
 import { Teacher } from "./teachers.entity";
 
-@Entity({ tableName: "users" })
+@Entity({ tableName: "users", repository: () => UserRepository })
 export class User extends CustomBaseEntity {
+  [EntityRepositoryType]?: UserRepository;
+
   @PrimaryKey()
   id!: number;
 
