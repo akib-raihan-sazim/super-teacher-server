@@ -1,10 +1,11 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
 
 import { EntityManager } from "@mikro-orm/core";
 import { InjectRepository } from "@mikro-orm/nestjs";
 
 import { Classroom } from "@/common/entities/classrooms.entity";
 import { User } from "@/common/entities/users.entity";
+import { UserRepository } from "@/users/users.repository";
 
 import { CreateClassroomDto, ClassroomResponseDto } from "./classrooms.dtos";
 import { ClassroomsRepository } from "./classrooms.repository";
@@ -14,6 +15,7 @@ export class ClassroomsService {
   constructor(
     @InjectRepository(Classroom)
     private readonly classroomsRepository: ClassroomsRepository,
+    private readonly userRepository: UserRepository,
     private readonly em: EntityManager,
   ) {}
 
@@ -64,5 +66,21 @@ export class ClassroomsService {
     );
     // TODO: query for fetching classrooms that a student is enrolled in.
     return classrooms;
+  }
+
+  async getClassroomById(id: number, userId: number): Promise<Classroom | null> {
+    const user = await this.userRepository.findOneOrFail({ id: userId }, { populate: ["teacher"] });
+
+    const classroom = await this.classroomsRepository.findOneOrFail(
+      { id },
+      { populate: ["teacher"] },
+    );
+
+    if (user.teacher && classroom.teacher.id !== user.teacher.id) {
+      throw new ForbiddenException("You do not have permission to access this classroom");
+    }
+    // TODO: Add check for students enrolled in the classroom
+    // For now, throw ForbiddenException if the user is not the teacher
+    return classroom;
   }
 }

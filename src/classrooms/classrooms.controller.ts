@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, Get } from "@nestjs/common";
+import { Body, Controller, Post, UseGuards, Get, Param } from "@nestjs/common";
 
 import { CurrentUser } from "@/auth/decorators/current-user.decorator";
 import { Roles } from "@/auth/decorators/roles.decorator";
@@ -31,5 +31,14 @@ export class ClassroomsController {
   async getClassrooms(@CurrentUser() user: { id: number }): Promise<ClassroomResponseDto[]> {
     const classrooms = await this.classroomsService.getClassroomsForUser(user.id);
     return this.classroomsSerializer.serializeMany(classrooms);
+  }
+
+  @Get(":id")
+  async getClassroomById(
+    @Param("id") id: number,
+    @CurrentUser() user: { id: number },
+  ): Promise<ClassroomResponseDto> {
+    const classroom = await this.classroomsService.getClassroomById(id, user.id);
+    return this.classroomsSerializer.serialize(classroom);
   }
 }
