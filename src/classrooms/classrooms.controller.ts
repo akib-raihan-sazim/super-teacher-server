@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, Get, Param } from "@nestjs/common";
+import { Body, Controller, Post, UseGuards, Get, Param, Delete } from "@nestjs/common";
 
 import { CurrentUser } from "@/auth/decorators/current-user.decorator";
 import { Roles } from "@/auth/decorators/roles.decorator";
@@ -40,5 +40,15 @@ export class ClassroomsController {
   ): Promise<ClassroomResponseDto> {
     const classroom = await this.classroomsService.getClassroomById(id, user.id);
     return this.classroomsSerializer.serialize(classroom);
+  }
+
+  @Delete(":id")
+  @Roles(EUserType.TEACHER)
+  async deleteClassroom(
+    @Param("id") id: number,
+    @CurrentUser() user: { id: number },
+  ): Promise<boolean> {
+    const result = await this.classroomsService.deleteClassroom(id, user.id);
+    return result;
   }
 }

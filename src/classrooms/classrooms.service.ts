@@ -83,4 +83,14 @@ export class ClassroomsService {
     // For now, throw ForbiddenException if the user is not the teacher
     return classroom;
   }
+
+  async deleteClassroom(id: number, userId: number): Promise<boolean> {
+    const classroom = await this.getClassroomById(id, userId);
+    if (!classroom) {
+      return false;
+    }
+
+    await this.em.removeAndFlush(classroom);
+    return true;
+  }
 }
