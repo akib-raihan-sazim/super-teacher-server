@@ -7,7 +7,7 @@ import { Classroom } from "@/common/entities/classrooms.entity";
 import { User } from "@/common/entities/users.entity";
 import { UserRepository } from "@/users/users.repository";
 
-import { CreateClassroomDto, ClassroomResponseDto } from "./classrooms.dtos";
+import { CreateClassroomDto, ClassroomResponseDto, UpdateClassroomDto } from "./classrooms.dtos";
 import { ClassroomsRepository } from "./classrooms.repository";
 
 @Injectable()
@@ -92,5 +92,18 @@ export class ClassroomsService {
 
     await this.em.removeAndFlush(classroom);
     return true;
+  }
+
+  async updateClassroom(
+    id: number,
+    updateClassroomDto: UpdateClassroomDto,
+    userId: number,
+  ): Promise<Classroom | null> {
+    const classroom = await this.getClassroomById(id, userId);
+    if (!classroom) {
+      return null;
+    }
+
+    return this.classroomsRepository.updateOne(classroom, updateClassroomDto);
   }
 }
