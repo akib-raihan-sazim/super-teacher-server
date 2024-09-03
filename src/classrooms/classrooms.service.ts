@@ -82,4 +82,14 @@ export class ClassroomsService {
     // TODO: Add check for students enrolled in the classroom
     return classroom;
   }
+
+  async deleteClassroom(id: number, userId: number): Promise<boolean> {
+    const classroom = await this.getClassroomById(id, userId);
+    if (!classroom) {
+      return false;
+    }
+
+    await this.classroomsRepository.deleteOne(classroom);
+    return true;
+  }
 }
