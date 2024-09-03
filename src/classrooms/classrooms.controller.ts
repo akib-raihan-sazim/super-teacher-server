@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards, Get, Param, Delete } from "@nestjs/common";
+import { Body, Controller, Post, UseGuards, Get, Param, Delete, Put } from "@nestjs/common";
 
 import { CurrentUser } from "@/auth/decorators/current-user.decorator";
 import { Roles } from "@/auth/decorators/roles.decorator";
@@ -6,7 +6,7 @@ import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "@/auth/guards/roles.guard";
 import { EUserType } from "@/common/enums/users.enums";
 
-import { ClassroomResponseDto, CreateClassroomDto } from "./classrooms.dtos";
+import { ClassroomResponseDto, CreateClassroomDto, UpdateClassroomDto } from "./classrooms.dtos";
 import { ClassroomsSerializer } from "./classrooms.serializer";
 import { ClassroomsService } from "./classrooms.service";
 
@@ -51,5 +51,16 @@ export class ClassroomsController {
   ): Promise<boolean> {
     const result = await this.classroomsService.deleteClassroom(id, user.id);
     return result;
+  }
+
+  @Put(":id")
+  @Roles(EUserType.TEACHER)
+  async updateClassroom(
+    @Param("id") id: number,
+    @CurrentUser() user: { id: number },
+    @Body() updateClassroomDto: UpdateClassroomDto,
+  ): Promise<ClassroomResponseDto> {
+    const classroom = await this.classroomsService.updateClassroom(id, updateClassroomDto, user.id);
+    return this.classroomsSerializer.serialize(classroom);
   }
 }
