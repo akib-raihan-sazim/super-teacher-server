@@ -9,11 +9,12 @@ import { User } from "@/common/entities/users.entity";
 import { MailModule } from "@/mail/mail.module";
 
 import { EnrollmentsController } from "./enrollments.controller";
+import { EnrollmentSerializer } from "./enrollments.serializer";
 import { EnrollmentsService } from "./enrollments.service";
 
 @Module({
   imports: [MikroOrmModule.forFeature([Classroom, Student, Enrollment, User]), MailModule],
-  providers: [EnrollmentsService],
+  providers: [EnrollmentsService, EnrollmentSerializer],
   controllers: [EnrollmentsController],
 })
 export class EnrollmentsModule {}
