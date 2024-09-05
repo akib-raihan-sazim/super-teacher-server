@@ -1,5 +1,6 @@
-import { Controller, Post, Body, UseGuards } from "@nestjs/common";
+import { Controller, Post, Body, UseGuards, Delete } from "@nestjs/common";
 
+import { CurrentUser } from "@/auth/decorators/current-user.decorator";
 import { Roles } from "@/auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "@/auth/guards/roles.guard";
@@ -17,5 +18,14 @@ export class EnrollmentsController {
   @Post()
   enrollStudent(@Body() createEnrollmentDto: CreateEnrollmentDto): Promise<EnrollmentResponseDto> {
     return this.enrollmentsService.enrollStudent(createEnrollmentDto);
+  }
+
+  @Roles(EUserType.TEACHER)
+  @Delete()
+  unenrollStudent(
+    @CurrentUser() user: { id: number },
+    @Body() deleteEnrollDto: CreateEnrollmentDto,
+  ): Promise<void> {
+    return this.enrollmentsService.removeStudent(user.id, deleteEnrollDto);
   }
 }

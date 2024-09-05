@@ -1,10 +1,11 @@
-import { Injectable, ConflictException } from "@nestjs/common";
+import { Injectable, ConflictException, UnauthorizedException } from "@nestjs/common";
 
 import { EntityManager } from "@mikro-orm/core";
 
 import { ClassroomsRepository } from "@/classrooms/classrooms.repository";
 import { MailService } from "@/mail/mail.service";
 import { StudentsRepository } from "@/students/students.repository";
+import { UserRepository } from "@/users/users.repository";
 
 import { CreateEnrollmentDto, EnrollmentResponseDto } from "./enrollments.dtos";
 import { EnrollmentsRepository } from "./enrollments.repository";
@@ -16,6 +17,7 @@ export class EnrollmentsService {
     private readonly studentRepository: StudentsRepository,
     private readonly classroomRepository: ClassroomsRepository,
     private readonly enrollmentRepository: EnrollmentsRepository,
+    private readonly userRepository: UserRepository,
     private readonly mailService: MailService,
   ) {}
 
@@ -45,5 +47,22 @@ export class EnrollmentsService {
     );
 
     return new EnrollmentResponseDto(enrollment.id, student.id, classroom.id);
+  }
+
+  async removeStudent(userId: number, deleteEnrollDto: CreateEnrollmentDto): Promise<void> {
+    const { studentId, classroomId } = deleteEnrollDto;
+
+    const user = await this.userRepository.findOneOrFail({ id: userId });
+    const classroom = await this.classroomRepository.findOneOrFail({ id: classroomId });
+
+    if (user.teacher && user.teacher.id !== classroom.teacher.id) {
+      throw new UnauthorizedException("You are not authorized to remove this student!");
+    }
+
+    const student = await this.studentRepository.findOneOrFail({ id: studentId });
+
+    const enrollment = await this.enrollmentRepository.findOneOrFail({ student, classroom });
+
+    await this.em.removeAndFlush(enrollment);
   }
 }
