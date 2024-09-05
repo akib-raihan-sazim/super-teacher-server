@@ -8,6 +8,7 @@ import { StudentsRepository } from "@/students/students.repository";
 import { UserRepository } from "@/users/users.repository";
 
 import { CreateEnrollmentDto, EnrollmentResponseDto } from "./enrollments.dtos";
+import { IEnrollment } from "./enrollments.interface";
 import { EnrollmentsRepository } from "./enrollments.repository";
 
 @Injectable()
@@ -64,5 +65,17 @@ export class EnrollmentsService {
     const enrollment = await this.enrollmentRepository.findOneOrFail({ student, classroom });
 
     await this.em.removeAndFlush(enrollment);
+  }
+
+  async getStudentsForClassroom(classroomId: number): Promise<IEnrollment[]> {
+    const classroom = await this.classroomRepository.findOneOrFail({ id: classroomId });
+
+    const enrollments = await this.enrollmentRepository.find(
+      { classroom },
+      {
+        populate: ["student", "student.user"],
+      },
+    );
+    return enrollments;
   }
 }

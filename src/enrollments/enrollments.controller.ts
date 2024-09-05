@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Delete } from "@nestjs/common";
+import { Controller, Post, Body, UseGuards, Delete, Get, Param } from "@nestjs/common";
 
 import { CurrentUser } from "@/auth/decorators/current-user.decorator";
 import { Roles } from "@/auth/decorators/roles.decorator";
@@ -7,12 +7,17 @@ import { RolesGuard } from "@/auth/guards/roles.guard";
 import { EUserType } from "@/common/enums/users.enums";
 
 import { CreateEnrollmentDto, EnrollmentResponseDto } from "./enrollments.dtos";
+import { IEnrollment } from "./enrollments.interface";
+import { EnrollmentSerializer } from "./enrollments.serializer";
 import { EnrollmentsService } from "./enrollments.service";
 
 @Controller("enrollments")
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class EnrollmentsController {
-  constructor(private readonly enrollmentsService: EnrollmentsService) {}
+  constructor(
+    private readonly enrollmentsService: EnrollmentsService,
+    private readonly enrollmentSerializer: EnrollmentSerializer,
+  ) {}
 
   @Roles(EUserType.TEACHER)
   @Post()
@@ -27,5 +32,12 @@ export class EnrollmentsController {
     @Body() deleteEnrollDto: CreateEnrollmentDto,
   ): Promise<void> {
     return this.enrollmentsService.removeStudent(user.id, deleteEnrollDto);
+  }
+
+  @Roles(EUserType.TEACHER)
+  @Get("students/:classroomId")
+  async getStudentsForClassroom(@Param("classroomId") classroomId: number): Promise<IEnrollment[]> {
+    const enrollments = await this.enrollmentsService.getStudentsForClassroom(classroomId);
+    return this.enrollmentSerializer.serializeMany(enrollments);
   }
 }
