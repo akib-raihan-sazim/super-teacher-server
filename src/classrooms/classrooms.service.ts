@@ -4,6 +4,7 @@ import { EntityManager } from "@mikro-orm/core";
 import { InjectRepository } from "@mikro-orm/nestjs";
 
 import { Classroom } from "@/common/entities/classrooms.entity";
+import { Enrollment } from "@/common/entities/enrollments.entity";
 import { User } from "@/common/entities/users.entity";
 import { UserRepository } from "@/users/users.repository";
 
@@ -51,20 +52,34 @@ export class ClassroomsService {
   }
 
   async getClassroomsForUser(userId: number): Promise<Classroom[]> {
-    const user = await this.em.findOne(User, { id: userId }, { populate: ["teacher"] });
-    if (!user) {
-      throw new NotFoundException("User not found");
-    }
-
-    const classrooms = await this.em.find(
-      Classroom,
-      { teacher: user.teacher },
-      {
-        orderBy: { classTime: "DESC" },
-        populate: ["teacher"],
-      },
+    const user = await this.userRepository.findOneOrFail(
+      { id: userId },
+      { populate: ["teacher", "student"] },
     );
-    // TODO: query for fetching classrooms that a student is enrolled in.
+    let classrooms: Classroom[] = [];
+    if (user.student) {
+      classrooms = await this.classroomsRepository.find(
+        {
+          id: {
+            $in: (
+              await this.em.find(Enrollment, { student: user.student })
+            ).map((enrollment) => enrollment.classroom.id),
+          },
+        },
+        {
+          populate: ["teacher", "teacher.user"],
+          orderBy: { classTime: "DESC" },
+        },
+      );
+    } else if (user.teacher) {
+      classrooms = await this.classroomsRepository.find(
+        { teacher: user.teacher },
+        {
+          orderBy: { classTime: "DESC" },
+          populate: ["teacher"],
+        },
+      );
+    }
     return classrooms;
   }
 
