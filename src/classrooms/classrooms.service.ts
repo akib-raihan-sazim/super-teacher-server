@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 
 import { EntityManager } from "@mikro-orm/core";
 import { InjectRepository } from "@mikro-orm/nestjs";
@@ -82,17 +82,13 @@ export class ClassroomsService {
   }
 
   async getClassroomById(id: number, userId: number): Promise<Classroom | null> {
-    const user = await this.userRepository.findOneOrFail({ id: userId }, { populate: ["teacher"] });
+    await this.userRepository.findOneOrFail({ id: userId }, { populate: ["teacher"] });
 
     const classroom = await this.classroomsRepository.findOneOrFail(
       { id },
-      { populate: ["teacher"] },
+      { populate: ["teacher", "teacher.user"] },
     );
 
-    if (user.teacher && classroom.teacher.id !== user.teacher.id) {
-      throw new ForbiddenException("You do not have permission to access this classroom");
-    }
-    // TODO: Add check for students enrolled in the classroom
     return classroom;
   }
 

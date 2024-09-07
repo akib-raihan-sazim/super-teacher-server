@@ -34,7 +34,7 @@ export class EnrollmentsController {
     return this.enrollmentsService.removeStudent(user.id, deleteEnrollDto);
   }
 
-  @Roles(EUserType.TEACHER)
+  // @Roles(EUserType.TEACHER)
   @Get("students/:classroomId")
   async getStudentsForClassroom(@Param("classroomId") classroomId: number): Promise<IEnrollment[]> {
     const enrollments = await this.enrollmentsService.getStudentsForClassroom(classroomId);
