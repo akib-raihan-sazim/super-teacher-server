@@ -3,6 +3,7 @@ import { Injectable, ConflictException } from "@nestjs/common";
 import { EntityManager } from "@mikro-orm/core";
 
 import { ClassroomsRepository } from "@/classrooms/classrooms.repository";
+import { MailService } from "@/mail/mail.service";
 import { StudentsRepository } from "@/students/students.repository";
 
 import { CreateEnrollmentDto } from "./enrollments.dtos";
@@ -15,12 +16,16 @@ export class EnrollmentsService {
     private readonly studentRepository: StudentsRepository,
     private readonly classroomRepository: ClassroomsRepository,
     private readonly enrollmentRepository: EnrollmentsRepository,
+    private readonly mailService: MailService,
   ) {}
 
   async enrollStudent(createEnrollmentDto: CreateEnrollmentDto): Promise<boolean> {
     const { studentId, classroomId } = createEnrollmentDto;
 
-    const student = await this.studentRepository.findOneOrFail({ id: studentId });
+    const student = await this.studentRepository.findOneOrFail(
+      { id: studentId },
+      { populate: ["user"] },
+    );
 
     const classroom = await this.classroomRepository.findOneOrFail({ id: classroomId });
 
@@ -32,6 +37,12 @@ export class EnrollmentsService {
     const enrollment = this.enrollmentRepository.create({ student, classroom });
 
     await this.em.persistAndFlush(enrollment);
+
+    await this.mailService.sendEmail(
+      student.user.email,
+      "Enrollment Done",
+      `Hello ${student.user.firstName}! You are enrolled in the clasroom.`,
+    );
 
     return true;
   }
