@@ -7,7 +7,7 @@ import { Classroom } from "@/common/entities/classrooms.entity";
 import { User } from "@/common/entities/users.entity";
 import { UserRepository } from "@/users/users.repository";
 
-import { CreateClassroomDto, ClassroomResponseDto } from "./classrooms.dtos";
+import { CreateClassroomDto, ClassroomResponseDto, UpdateClassroomDto } from "./classrooms.dtos";
 import { ClassroomsRepository } from "./classrooms.repository";
 
 @Injectable()
@@ -91,5 +91,18 @@ export class ClassroomsService {
 
     await this.classroomsRepository.deleteOne(classroom);
     return true;
+  }
+
+  async updateClassroom(
+    id: number,
+    updateClassroomDto: UpdateClassroomDto,
+    userId: number,
+  ): Promise<Classroom | null> {
+    await this.userRepository.findOneOrFail({ id: userId }, { populate: ["teacher"] });
+    const classroom = await this.classroomsRepository.findOneOrFail(
+      { id },
+      { populate: ["teacher"] },
+    );
+    return this.classroomsRepository.updateOne(classroom, updateClassroomDto);
   }
 }

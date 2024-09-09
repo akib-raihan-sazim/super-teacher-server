@@ -1,5 +1,5 @@
-import { Exclude, Expose } from "class-transformer";
-import { IsString, IsNotEmpty, IsArray, IsDateString } from "class-validator";
+import { Exclude, Expose, Type } from "class-transformer";
+import { IsString, IsNotEmpty, IsArray, IsDateString, IsOptional } from "class-validator";
 
 export class CreateClassroomDto {
   @IsString()
@@ -42,4 +42,25 @@ export class ClassroomResponseDto {
   constructor(partial: Partial<ClassroomResponseDto>) {
     Object.assign(this, partial);
   }
+}
+
+export class UpdateClassroomDto {
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  subject?: string;
+
+  @IsOptional()
+  @Type(() => Date)
+  classTime?: Date;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  days?: string[];
 }
