@@ -1760,14 +1760,23 @@
     knex "3.1.0"
     sqlstring "2.3.3"
 
-"@mikro-orm/migrations@~6.2.0":
-  version "6.2.9"
-  resolved "https://registry.yarnpkg.com/@mikro-orm/migrations/-/migrations-6.2.9.tgz#c88715510022e377549883c6bcc29eae4d6910cb"
-  integrity sha512-QDaYjKxzeGxHhbdP4KDGjD1NM1n6UwRHBjnx+cIB/bLo0sGIcVhT8ajVFKwULweh5bf9iSn9U9/OiU+Ykem/Jg==
+"@mikro-orm/knex@6.3.9":
+  version "6.3.9"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/knex/-/knex-6.3.9.tgz#2c1a3489926e38bae285168c2e12982395026307"
+  integrity sha512-KnyZyoH/RdT4Te4ZcjxnROrOUDTV0HQLl+RijjsJSIsqaQzF485qio03CowDnOmMWSiUjFQlBRxKRaKdN3Bhqg==
   dependencies:
-    "@mikro-orm/knex" "6.2.9"
     fs-extra "11.2.0"
-    umzug "3.8.0"
+    knex "3.1.0"
+    sqlstring "2.3.3"
+
+"@mikro-orm/migrations@~6.3.9":
+  version "6.3.9"
+  resolved "https://registry.yarnpkg.com/@mikro-orm/migrations/-/migrations-6.3.9.tgz#2aef64af9a3543962584759db853127690801286"
+  integrity sha512-BUfuQbx4JHDTV4UylQDtA3qnL9exm2DcujwX9h3TLZnmPT4PURfMBobonBWagvB7TnDgvhHHcWdjRvm8uxZ1oQ==
+  dependencies:
+    "@mikro-orm/knex" "6.3.9"
+    fs-extra "11.2.0"
+    umzug "3.8.1"
 
 "@mikro-orm/nestjs@^5.2.3":
   version "5.2.3"
@@ -10428,10 +10437,10 @@ uid@2.0.2:
   dependencies:
     "@lukeed/csprng" "^1.0.0"
 
-umzug@3.8.0:
-  version "3.8.0"
-  resolved "https://registry.yarnpkg.com/umzug/-/umzug-3.8.0.tgz#dfe2d753141f155f30106b2b893e355fed0c645f"
-  integrity sha512-FRBvdZxllW3eUzsqG3CIfgOVChUONrKNZozNOJfvmcfBn5pMKcJjICuMMEsDLHYa/aqd7a2NtXfYEG86XHe1lQ==
+umzug@3.8.1:
+  version "3.8.1"
+  resolved "https://registry.yarnpkg.com/umzug/-/umzug-3.8.1.tgz#52e7f2c831b56fade367a42bf190ac73a786dda7"
+  integrity sha512-k0HjOc3b/s8vH24BUTvnaFiKhfWI9UQAGpqHDG+3866CGlBTB83Xs5wZ1io1mwYLj/GHvQ34AxKhbpYnWtkRJg==
   dependencies:
     "@rushstack/ts-command-line" "^4.12.2"
     emittery "^0.13.0"
