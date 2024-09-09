@@ -10,6 +10,7 @@ import { AuthModule } from "./auth/auth.module";
 import { ClassroomsModule } from "./classrooms/classrooms.module";
 import { AppLoggerMiddleware } from "./common/middleware/request-logger.middleware";
 import ormConfig from "./db/db.config";
+import { EnrollmentsModule } from "./enrollments/enrollments.module";
 import { StudentsModule } from "./students/students.module";
 import { UniqueCodeModule } from "./unique-code/unique-code.module";
 import { UsersModule } from "./users/users.module";
@@ -32,6 +33,7 @@ import { UsersModule } from "./users/users.module";
     StudentsModule,
     UniqueCodeModule,
     ClassroomsModule,
+    EnrollmentsModule,
   ],
   controllers: [],
   providers: [
