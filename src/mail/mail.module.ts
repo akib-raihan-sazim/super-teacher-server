@@ -8,7 +8,7 @@ import { MailService } from "./mail.service";
     MailerModule.forRoot({
       transport: {
         host: process.env.MAIL_HOST,
-        port: process.env.MAIL_PORT,
+        port: Number(process.env.MAIL_PORT),
         ignoreTLS: true,
         secure: true,
         auth: {
