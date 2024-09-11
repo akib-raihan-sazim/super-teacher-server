@@ -5,6 +5,10 @@ import { Roles } from "@/auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
 import { RolesGuard } from "@/auth/guards/roles.guard";
 import { EUserType } from "@/common/enums/users.enums";
+import { CreateEnrollmentDto } from "@/enrollments/enrollments.dtos";
+import { IEnrollment } from "@/enrollments/enrollments.interface";
+import { EnrollmentSerializer } from "@/enrollments/enrollments.serializer";
+import { EnrollmentsService } from "@/enrollments/enrollments.service";
 
 import { ClassroomResponseDto, CreateClassroomDto, UpdateClassroomDto } from "./classrooms.dtos";
 import { ClassroomsSerializer } from "./classrooms.serializer";
@@ -16,6 +20,8 @@ export class ClassroomsController {
   constructor(
     private readonly classroomsService: ClassroomsService,
     private readonly classroomsSerializer: ClassroomsSerializer,
+    private readonly enrollmentsService: EnrollmentsService,
+    private readonly enrollmentSerializer: EnrollmentSerializer,
   ) {}
 
   @Post()
@@ -62,5 +68,38 @@ export class ClassroomsController {
   ): Promise<ClassroomResponseDto> {
     const classroom = await this.classroomsService.updateClassroom(id, updateClassroomDto, user.id);
     return this.classroomsSerializer.serialize(classroom);
+  }
+
+  @Post(":id/enroll")
+  @Roles(EUserType.TEACHER)
+  enrollStudent(
+    @Param("id") classroomId: number,
+    @Body() enrollmentDto: { studentId: number },
+  ): Promise<boolean> {
+    const createEnrollmentDto: CreateEnrollmentDto = {
+      studentId: enrollmentDto.studentId,
+      classroomId: classroomId,
+    };
+    return this.enrollmentsService.enrollStudent(createEnrollmentDto);
+  }
+
+  @Delete(":id/unenroll")
+  @Roles(EUserType.TEACHER)
+  unenrollStudent(
+    @Param("id") classroomId: number,
+    @CurrentUser() user: { id: number },
+    @Body() unenrollDto: { studentId: number },
+  ): Promise<void> {
+    const deleteEnrollDto: CreateEnrollmentDto = {
+      studentId: unenrollDto.studentId,
+      classroomId: classroomId,
+    };
+    return this.enrollmentsService.removeStudent(user.id, deleteEnrollDto);
+  }
+
+  @Get(":id/students")
+  async getStudentsForClassroom(@Param("id") classroomId: number): Promise<IEnrollment[]> {
+    const enrollments = await this.enrollmentsService.getStudentsForClassroom(classroomId);
+    return this.enrollmentSerializer.serializeMany(enrollments);
   }
 }
