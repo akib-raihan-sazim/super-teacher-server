@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
 
 import { CurrentUser } from "@/auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
@@ -24,5 +24,12 @@ export class MessagesController {
     const message: Message = await this.messagesService.createMessage(createMessageDto, user.id);
 
     return this.messagesSerializer.serialize(message);
+  }
+
+  @Get("classroom/:classroomId/messages")
+  async getMessagesForClassroom(@Param("classroomId") classroomId: number) {
+    const messages = await this.messagesService.getMessagesByClassroom(classroomId);
+
+    return this.messagesSerializer.serializeMany(messages);
   }
 }
