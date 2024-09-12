@@ -30,4 +30,9 @@ export class MessagesService {
 
     return this.messagesRepository.createOne(messageData);
   }
+
+  async getMessagesByClassroom(classroomId: number): Promise<Message[]> {
+    const classroom = await this.classroomsRepository.findOneOrFail(classroomId);
+    return this.messagesRepository.find({ classroom });
+  }
 }
