@@ -13,6 +13,7 @@ import ormConfig from "./db/db.config";
 import { EnrollmentsModule } from "./enrollments/enrollments.module";
 import { MailModule } from "./mail/mail.module";
 import { MessagesModule } from "./messages/messages.module";
+import { RealtimeMessagingModule } from "./realtime-messaging/realtime-messaging.module";
 import { StudentsModule } from "./students/students.module";
 import { UniqueCodeModule } from "./unique-code/unique-code.module";
 import { UsersModule } from "./users/users.module";
@@ -38,6 +39,7 @@ import { UsersModule } from "./users/users.module";
     EnrollmentsModule,
     MailModule,
     MessagesModule,
+    RealtimeMessagingModule,
   ],
   controllers: [],
   providers: [
