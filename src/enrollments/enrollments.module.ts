@@ -16,5 +16,6 @@ import { EnrollmentsService } from "./enrollments.service";
   imports: [MikroOrmModule.forFeature([Classroom, Student, Enrollment, User]), MailModule],
   providers: [EnrollmentsService, EnrollmentSerializer],
   controllers: [EnrollmentsController],
+  exports: [EnrollmentsService, EnrollmentSerializer],
 })
 export class EnrollmentsModule {}
