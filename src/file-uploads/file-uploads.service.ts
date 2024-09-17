@@ -1,19 +1,25 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, HttpException, HttpStatus } from "@nestjs/common";
 
-import { S3Service } from "@/common/aws/s3-service/s3-service";
-import { PresignedUrlFileDto } from "@/file-uploads/file-uploads.dtos";
+import { FirebaseService } from "@/firebase/firebase.service";
+
+import { ALLOWED_MIME_TYPES } from "./file-uploads.constants";
 
 @Injectable()
 export class FileUploadsService {
-  constructor(private readonly s3Service: S3Service) {}
+  constructor(private readonly firebaseService: FirebaseService) {}
 
-  getPresignedUrl(fileUploadDto: PresignedUrlFileDto) {
-    return Promise.all(
-      fileUploadDto.files.map(async (file) => {
-        const { name, type } = file;
-        const signedUrl = await this.s3Service.getPresignedUrl(name, type);
-        return { name, type, signedUrl };
-      }),
-    );
+  async uploadFile(file: Express.Multer.File, filename: string): Promise<string> {
+    if (!ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      throw new HttpException(
+        "Invalid file type. Only PDF, PNG, JPG, and DOC files are allowed.",
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    try {
+      const fileUrl = await this.firebaseService.uploadFile(file, filename);
+      return fileUrl;
+    } catch (error) {
+      throw new HttpException("Failed to upload file", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

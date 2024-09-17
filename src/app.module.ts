@@ -8,6 +8,7 @@ import { OpenTelemetryModule } from "@metinseylan/nestjs-opentelemetry";
 
 import { AuthModule } from "./auth/auth.module";
 import { ClassroomsModule } from "./classrooms/classrooms.module";
+import { ClassworksModule } from "./classworks/classworks.module";
 import { AppLoggerMiddleware } from "./common/middleware/request-logger.middleware";
 import ormConfig from "./db/db.config";
 import { EnrollmentsModule } from "./enrollments/enrollments.module";
@@ -40,6 +41,7 @@ import { UsersModule } from "./users/users.module";
     MailModule,
     MessagesModule,
     RealtimeMessagingModule,
+    ClassworksModule,
   ],
   controllers: [],
   providers: [
