@@ -12,6 +12,7 @@ import { AppLoggerMiddleware } from "./common/middleware/request-logger.middlewa
 import ormConfig from "./db/db.config";
 import { EnrollmentsModule } from "./enrollments/enrollments.module";
 import { MailModule } from "./mail/mail.module";
+import { MessagesModule } from "./messages/messages.module";
 import { StudentsModule } from "./students/students.module";
 import { UniqueCodeModule } from "./unique-code/unique-code.module";
 import { UsersModule } from "./users/users.module";
@@ -36,6 +37,7 @@ import { UsersModule } from "./users/users.module";
     ClassroomsModule,
     EnrollmentsModule,
     MailModule,
+    MessagesModule,
   ],
   controllers: [],
   providers: [
