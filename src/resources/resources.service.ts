@@ -40,4 +40,10 @@ export class ResourcesService {
 
     return resource;
   }
+
+  async getClassroomResources(classroomId: number) {
+    const classroom = await this.classroomsRepository.findOneOrFail({ id: classroomId });
+
+    return this.resourcesRepository.find({ classroom: classroom });
+  }
 }
