@@ -25,4 +25,8 @@ export class ExamsRepository extends EntityRepository<Exam> {
     await this.em.persistAndFlush(exam);
     return exam;
   }
+
+  async deleteOne(exam: Exam): Promise<void> {
+    await this.em.removeAndFlush(exam);
+  }
 }

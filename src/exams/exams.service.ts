@@ -33,4 +33,10 @@ export class ExamsService {
     const exam = await this.examsRepository.updateOne(examId, updateExamDto);
     return exam;
   }
+
+  async deleteOne(examId: number): Promise<void> {
+    const exam = await this.examsRepository.findOneOrFail({ id: examId });
+
+    await this.examsRepository.deleteOne(exam);
+  }
 }

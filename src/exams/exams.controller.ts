@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
 
 import { Roles } from "@/auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
@@ -43,5 +43,11 @@ export class ExamsController {
   ): Promise<ExamResponseDto> {
     const exam = await this.examsService.updateOne(examId, updateExamDto);
     return this.examsSerializer.serialize(exam);
+  }
+
+  @Delete("exams/:examId")
+  @Roles(EUserType.TEACHER)
+  async deleteExam(@Param("examId") examId: number): Promise<void> {
+    await this.examsService.deleteOne(examId);
   }
 }
