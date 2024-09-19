@@ -46,4 +46,16 @@ export class ResourcesService {
 
     return this.resourcesRepository.find({ classroom: classroom });
   }
+
+  async deleteResource(resourceId: number) {
+    const resource = await this.resourcesRepository.findOneOrFail(resourceId);
+
+    const fileKey = resource.fileUrl.split("project-dev-bucket/")[1];
+
+    await this.fileUploadsService.deleteFromS3(fileKey);
+
+    await this.resourcesRepository.deleteOne(resource);
+
+    return { message: "Resource deleted successfully" };
+  }
 }
