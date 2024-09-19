@@ -7,9 +7,11 @@ import {
   Body,
   Get,
   Delete,
+  Put,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 
+import { UpdateResourceDto } from "./resources.dtos";
 import { ResourcesService } from "./resources.service";
 
 @Controller("classrooms")
@@ -35,5 +37,15 @@ export class ResourcesController {
   @Delete(":classroomId/resources/:resourceId")
   async deleteResource(@Param("resourceId") resourceId: number) {
     await this.resourcesService.deleteResource(resourceId);
+  }
+
+  @Put(":classroomId/resources/:resourceId")
+  @UseInterceptors(FileInterceptor("file"))
+  updateResource(
+    @Param("resourceId") resourceId: number,
+    @Body() updateResourceDto: UpdateResourceDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.resourcesService.updateResource(resourceId, updateResourceDto, file);
   }
 }
