@@ -13,7 +13,7 @@ export class ResourcesService {
     private readonly resourcesRepository: ResourcesRepository,
   ) {}
 
-  async uploadResource(
+  async uploadOne(
     file: Express.Multer.File,
     classroomId: number,
     title: string,
@@ -47,7 +47,7 @@ export class ResourcesService {
     return this.resourcesRepository.find({ classroom: classroom });
   }
 
-  async deleteResource(resourceId: number) {
+  async deleteOne(resourceId: number) {
     const resource = await this.resourcesRepository.findOneOrFail(resourceId);
 
     const fileKey = resource.fileUrl.split("project-dev-bucket/")[1];
@@ -59,7 +59,7 @@ export class ResourcesService {
     return { message: "Resource deleted successfully" };
   }
 
-  async updateResource(
+  async updateOne(
     resourceId: number,
     updateResourceDto: UpdateResourceDto,
     file?: Express.Multer.File,
