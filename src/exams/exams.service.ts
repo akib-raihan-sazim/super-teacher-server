@@ -20,4 +20,12 @@ export class ExamsService {
 
     return exam;
   }
+
+  async getExamsByClassroomId(classroomId: number): Promise<Exam[]> {
+    const classroom = await this.classroomsRepository.findOneOrFail({ id: classroomId });
+
+    const exams = await this.examsRepository.find({ classroom });
+
+    return exams;
+  }
 }

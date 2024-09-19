@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
 
 import { Roles } from "@/auth/decorators/roles.decorator";
 import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
@@ -26,5 +26,12 @@ export class ExamsController {
   ): Promise<Exam> {
     const exam = await this.examsService.createOne(classroomId, createExamDto);
     return this.examsSerializer.serialize(exam);
+  }
+
+  @Get(":classroomId/exams")
+  @Roles(EUserType.TEACHER)
+  async getExamsByClassroomId(@Param("classroomId") classroomId: number): Promise<Exam[]> {
+    const exams = await this.examsService.getExamsByClassroomId(classroomId);
+    return this.examsSerializer.serializeMany(exams);
   }
 }
