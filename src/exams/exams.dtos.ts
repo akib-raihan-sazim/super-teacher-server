@@ -1,5 +1,5 @@
 import { Transform, Expose } from "class-transformer";
-import { IsDate, IsString } from "class-validator";
+import { IsDate, IsOptional, IsString } from "class-validator";
 
 export class CreateExamDto {
   @IsString()
@@ -32,4 +32,19 @@ export class ExamResponseDto {
   constructor(partial: Partial<ExamResponseDto>) {
     Object.assign(this, partial);
   }
+}
+
+export class UpdateExamDto {
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  instruction?: string;
+
+  @IsOptional()
+  @IsDate()
+  @Transform(({ value }) => new Date(value))
+  date?: Date;
 }

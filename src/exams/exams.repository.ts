@@ -5,7 +5,7 @@ import { EntityRepository } from "@mikro-orm/postgresql";
 import { Classroom } from "@/common/entities/classrooms.entity";
 import { Exam } from "@/common/entities/exams.entity";
 
-import { CreateExamDto } from "./exams.dtos";
+import { CreateExamDto, UpdateExamDto } from "./exams.dtos";
 
 @Injectable()
 export class ExamsRepository extends EntityRepository<Exam> {
@@ -15,6 +15,13 @@ export class ExamsRepository extends EntityRepository<Exam> {
       classroom,
     });
 
+    await this.em.persistAndFlush(exam);
+    return exam;
+  }
+
+  async updateOne(examId: number, updateExamDto: UpdateExamDto): Promise<Exam> {
+    const exam = await this.findOneOrFail({ id: examId });
+    Object.assign(exam, updateExamDto);
     await this.em.persistAndFlush(exam);
     return exam;
   }
