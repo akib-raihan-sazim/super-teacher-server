@@ -39,4 +39,9 @@ export class AssignmentsService {
 
     return assignment;
   }
+
+  async getAssignmentsByClassroomId(classroomId: number) {
+    const classroom = await this.classroomsRepository.findOneOrFail({ id: classroomId });
+    return this.assignmentsRepository.find({ classroom });
+  }
 }
