@@ -1,4 +1,4 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Param, Body } from "@nestjs/common";
+import { Controller, Post, UseInterceptors, UploadedFile, Param, Body, Get } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 
 import { UploadAssignmentDto } from "./assignments.dtos";
@@ -25,5 +25,10 @@ export class AssignmentsController {
       uploadAssignmentDto,
     );
     return this.assignmentsSerializer.serialize(assignment);
+  }
+
+  @Get(":classroomId/assignments")
+  getAssignments(@Param("classroomId") classroomId: number) {
+    return this.assignmentsService.getAssignmentsByClassroomId(classroomId);
   }
 }
