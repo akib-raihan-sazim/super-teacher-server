@@ -16,6 +16,6 @@ export class AssignmentsSerializer extends AbstractBaseSerializer {
     skipNull: true,
     forceObject: true,
     exclude: [],
-    populate: [],
+    populate: ["classroom"],
   };
 }
