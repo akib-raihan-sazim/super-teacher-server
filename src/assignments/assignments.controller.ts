@@ -7,8 +7,11 @@ import {
   Body,
   Get,
   Put,
+  Delete,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
+
+import { Assignment } from "@/common/entities/assignments.entity";
 
 import { UpdateAssignmentDto, UploadAssignmentDto } from "./assignments.dtos";
 import { AssignmentsSerializer } from "./assignments.serializer";
@@ -37,18 +40,25 @@ export class AssignmentsController {
   }
 
   @Get(":classroomId/assignments")
-  getAssignments(@Param("classroomId") classroomId: number) {
-    return this.assignmentsService.getAssignmentsByClassroomId(classroomId);
+  async getAssignments(@Param("classroomId") classroomId: number): Promise<Assignment[]> {
+    const assignments = await this.assignmentsService.getAssignmentsByClassroomId(classroomId);
+    return this.assignmentsSerializer.serializeMany(assignments);
   }
 
-  @Put(":classroomId/assignments/:assignmentId")
+  @Put("assignments/:assignmentId")
   @UseInterceptors(FileInterceptor("file"))
-  editAssignment(
+  async editAssignment(
     @Param("assignmentId") assignmentId: number,
-    @Param("classroomId") classroomId: number,
     @Body() updateAssignmentDto: UpdateAssignmentDto,
     @UploadedFile() file?: Express.Multer.File,
-  ) {
-    return this.assignmentsService.updateAssignment(assignmentId, updateAssignmentDto, file);
+  ): Promise<Assignment> {
+    const assignment = await this.assignmentsService.updateOne(assignmentId, updateAssignmentDto, file);
+    return this.assignmentsSerializer.serialize(assignment);
+  }
+
+  @Delete("assignments/:assignmentId")
+  async deleteAssignment(@Param("assignmentId") assignmentId: number) {
+    await this.assignmentsService.deleteOne(assignmentId);
+    return { message: "Assignment deleted successfully" };
   }
 }
