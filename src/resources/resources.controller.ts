@@ -1,4 +1,4 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Param, Body } from "@nestjs/common";
+import { Controller, Post, UseInterceptors, UploadedFile, Param, Body, Get } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 
 import { ResourcesService } from "./resources.service";
@@ -16,5 +16,10 @@ export class ResourcesController {
     @Body("description") description: string,
   ) {
     return this.classworksService.uploadResource(file, classroomId, title, description);
+  }
+
+  @Get(":classroomId/resources")
+  getClassroomResources(@Param("classroomId") classroomId: number) {
+    return this.classworksService.getClassroomResources(classroomId);
   }
 }
