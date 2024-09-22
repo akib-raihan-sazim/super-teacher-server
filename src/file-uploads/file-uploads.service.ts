@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { randomUUID } from "crypto";
 
 import { S3Service } from "@/common/aws/s3-service/s3-service";
@@ -11,6 +12,7 @@ import { ALLOWED_MIME_TYPES } from "./file-uploads.constants";
 export class FileUploadsService {
   constructor(
     private readonly s3Service: S3Service,
+    private readonly s3Client: S3Client,
     private readonly configService: ConfigService,
   ) {}
 
@@ -33,5 +35,20 @@ export class FileUploadsService {
       },
     });
     return response;
+  }
+
+  async deleteFromS3(key: string) {
+    try {
+      const deleteParams = {
+        Bucket: await this.configService.get("AWS_S3_BUCKET_NAME"),
+        Key: key,
+      };
+      const command = new DeleteObjectCommand(deleteParams);
+      const response = await this.s3Client.send(command);
+      return response;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      throw new Error(`S3 Deletion Error: ${errorMessage}`);
+    }
   }
 }

@@ -13,4 +13,8 @@ export class ResourcesRepository extends EntityRepository<Resources> {
     await this.em.persistAndFlush(resource);
     return resource;
   }
+
+  async deleteOne(resource: Resources): Promise<void> {
+    await this.em.removeAndFlush(resource);
+  }
 }
