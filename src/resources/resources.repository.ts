@@ -4,7 +4,7 @@ import { EntityRepository } from "@mikro-orm/postgresql";
 
 import { Resources } from "@/common/entities/resources.entity";
 
-import { CreateResourceDto } from "./resources.dtos";
+import { CreateResourceDto, UpdateResourceDto } from "./resources.dtos";
 
 @Injectable()
 export class ResourcesRepository extends EntityRepository<Resources> {
@@ -16,5 +16,11 @@ export class ResourcesRepository extends EntityRepository<Resources> {
 
   async deleteOne(resource: Resources): Promise<void> {
     await this.em.removeAndFlush(resource);
+  }
+
+  async updateOne(resource: Resources, updateResourceDto: UpdateResourceDto): Promise<Resources> {
+    this.assign(resource, updateResourceDto);
+    await this.em.persistAndFlush(resource);
+    return resource;
   }
 }
