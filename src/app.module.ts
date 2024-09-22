@@ -11,6 +11,7 @@ import { ClassroomsModule } from "./classrooms/classrooms.module";
 import { AppLoggerMiddleware } from "./common/middleware/request-logger.middleware";
 import ormConfig from "./db/db.config";
 import { EnrollmentsModule } from "./enrollments/enrollments.module";
+import { ExamsModule } from "./exams/exams.module";
 import { FileUploadsModule } from "./file-uploads/file-uploads.module";
 import { MailModule } from "./mail/mail.module";
 import { MessagesModule } from "./messages/messages.module";
@@ -44,6 +45,7 @@ import { UsersModule } from "./users/users.module";
     RealtimeMessagingModule,
     FileUploadsModule,
     ResourcesModule,
+    ExamsModule,
   ],
   controllers: [],
   providers: [

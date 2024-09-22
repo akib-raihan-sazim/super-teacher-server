@@ -26,7 +26,7 @@ export class ResourcesController {
     @Body("title") title: string,
     @Body("description") description: string,
   ) {
-    return this.resourcesService.uploadResource(file, classroomId, title, description);
+    return this.resourcesService.uploadOne(file, classroomId, title, description);
   }
 
   @Get(":classroomId/resources")
@@ -36,7 +36,7 @@ export class ResourcesController {
 
   @Delete(":classroomId/resources/:resourceId")
   async deleteResource(@Param("resourceId") resourceId: number) {
-    await this.resourcesService.deleteResource(resourceId);
+    await this.resourcesService.deleteOne(resourceId);
   }
 
   @Put(":classroomId/resources/:resourceId")
@@ -46,6 +46,6 @@ export class ResourcesController {
     @Body() updateResourceDto: UpdateResourceDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.resourcesService.updateResource(resourceId, updateResourceDto, file);
+    return this.resourcesService.updateOne(resourceId, updateResourceDto, file);
   }
 }
