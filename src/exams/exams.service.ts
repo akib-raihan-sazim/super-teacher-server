@@ -3,7 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { ClassroomsRepository } from "@/classrooms/classrooms.repository";
 import { Exam } from "@/common/entities/exams.entity";
 
-import { CreateExamDto } from "./exams.dtos";
+import { CreateExamDto, UpdateExamDto } from "./exams.dtos";
 import { ExamsRepository } from "./exams.repository";
 
 @Injectable()
@@ -27,5 +27,10 @@ export class ExamsService {
     const exams = await this.examsRepository.find({ classroom });
 
     return exams;
+  }
+
+  async updateOne(examId: number, updateExamDto: UpdateExamDto): Promise<Exam> {
+    const exam = await this.examsRepository.updateOne(examId, updateExamDto);
+    return exam;
   }
 }
