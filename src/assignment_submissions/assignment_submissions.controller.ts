@@ -1,11 +1,20 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Body, Get, Param } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  Body,
+  Get,
+  Param,
+  Delete,
+} from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 
 import { CreateAssignmentSubmissionDto } from "./assignment_submissions.dtos";
 import { AssignmentSubmissionsSerializer } from "./assignment_submissions.serializer";
 import { AssignmentSubmissionsService } from "./assignment_submissions.service";
 
-@Controller("classrooms")
+@Controller("assignments")
 export class AssignmentSubmissionsController {
   constructor(
     private readonly assignmentSubmissionsService: AssignmentSubmissionsService,
@@ -31,5 +40,11 @@ export class AssignmentSubmissionsController {
       assignmentId,
     );
     return this.assignmentSubmissionsSerializer.serializeMany(submissions);
+  }
+
+  @Delete("submissions/:submissionId")
+  async deleteSubmission(@Param("submissionId") submissionId: number) {
+    await this.assignmentSubmissionsService.deleteOne(submissionId);
+    return { message: "Submission deleted successfully" };
   }
 }
