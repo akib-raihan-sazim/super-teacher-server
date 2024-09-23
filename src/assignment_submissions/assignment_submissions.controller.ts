@@ -1,4 +1,4 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Body } from "@nestjs/common";
+import { Controller, Post, UseInterceptors, UploadedFile, Body, Get, Param } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 
 import { CreateAssignmentSubmissionDto } from "./assignment_submissions.dtos";
@@ -23,5 +23,13 @@ export class AssignmentSubmissionsController {
       createAssignmentSubmissionDto,
     );
     return this.assignmentSubmissionsSerializer.serialize(assignmentSubmission);
+  }
+
+  @Get(":assignmentId/submissions")
+  async getSubmissionsForAssignment(@Param("assignmentId") assignmentId: number) {
+    const submissions = await this.assignmentSubmissionsService.getSubmissionsByAssignmentId(
+      assignmentId,
+    );
+    return this.assignmentSubmissionsSerializer.serializeMany(submissions);
   }
 }

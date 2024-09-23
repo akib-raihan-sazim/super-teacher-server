@@ -46,4 +46,15 @@ export class AssignmentSubmissionsService {
 
     return assignmentSubmission;
   }
+
+  async getSubmissionsByAssignmentId(assignmentId: number) {
+    const assignment = await this.assignmentsRepository.findOneOrFail(assignmentId);
+
+    const submissions = await this.assignmentSubmissionsRepository.find(
+      { assignment },
+      { populate: ["student", "student.user"] },
+    );
+
+    return submissions;
+  }
 }
