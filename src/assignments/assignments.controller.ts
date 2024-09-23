@@ -52,7 +52,11 @@ export class AssignmentsController {
     @Body() updateAssignmentDto: UpdateAssignmentDto,
     @UploadedFile() file?: Express.Multer.File,
   ): Promise<Assignment> {
-    const assignment = await this.assignmentsService.updateOne(assignmentId, updateAssignmentDto, file);
+    const assignment = await this.assignmentsService.updateOne(
+      assignmentId,
+      updateAssignmentDto,
+      file,
+    );
     return this.assignmentsSerializer.serialize(assignment);
   }
 

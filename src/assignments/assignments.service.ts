@@ -43,7 +43,10 @@ export class AssignmentsService {
 
   async getAssignmentsByClassroomId(classroomId: number): Promise<Assignment[]> {
     const classroom = await this.classroomsRepository.findOneOrFail({ id: classroomId });
-    const assignments = await this.assignmentsRepository.find({ classroom }, {populate: ["classroom"]});
+    const assignments = await this.assignmentsRepository.find(
+      { classroom },
+      { populate: ["classroom"] },
+    );
     return assignments;
   }
 

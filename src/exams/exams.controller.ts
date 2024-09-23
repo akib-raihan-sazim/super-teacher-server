@@ -29,7 +29,6 @@ export class ExamsController {
   }
 
   @Get(":classroomId/exams")
-  @Roles(EUserType.TEACHER)
   async getExamsByClassroomId(@Param("classroomId") classroomId: number): Promise<Exam[]> {
     const exams = await this.examsService.getExamsByClassroomId(classroomId);
     return this.examsSerializer.serializeMany(exams);
