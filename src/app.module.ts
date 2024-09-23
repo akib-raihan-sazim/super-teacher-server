@@ -6,6 +6,7 @@ import { MikroOrmModule } from "@mikro-orm/nestjs";
 
 import { OpenTelemetryModule } from "@metinseylan/nestjs-opentelemetry";
 
+import { AssignmentSubmissionsModule } from "./assignment_submissions/assignment_submissions.module";
 import { AssignmentsModule } from "./assignments/assignments.module";
 import { AuthModule } from "./auth/auth.module";
 import { ClassroomsModule } from "./classrooms/classrooms.module";
@@ -48,6 +49,7 @@ import { UsersModule } from "./users/users.module";
     ResourcesModule,
     ExamsModule,
     AssignmentsModule,
+    AssignmentSubmissionsModule,
   ],
   controllers: [],
   providers: [
