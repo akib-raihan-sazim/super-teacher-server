@@ -1,7 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 
-import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "crypto";
 
 import { S3Service } from "@/common/aws/s3-service/s3-service";
@@ -49,6 +50,22 @@ export class FileUploadsService {
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
       throw new Error(`S3 Deletion Error: ${errorMessage}`);
+    }
+  }
+
+  async getDownloadUrl(fileKey: string) {
+    try {
+      const command = new GetObjectCommand({
+        Bucket: this.configService.get("AWS_S3_BUCKET_NAME"),
+        Key: fileKey,
+        ResponseContentDisposition: `attachment; filename="${fileKey.split("/").pop()}"`,
+      });
+
+      const signedUrl = await getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
+      return signedUrl;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
+      throw new Error(`Download URL ERROR: ${errorMessage}`);
     }
   }
 }

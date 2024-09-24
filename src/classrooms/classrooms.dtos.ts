@@ -63,4 +63,8 @@ export class UpdateClassroomDto {
   @IsArray()
   @IsString({ each: true })
   days?: string[];
+
+  @IsOptional()
+  @IsString()
+  meetLink?: string;
 }

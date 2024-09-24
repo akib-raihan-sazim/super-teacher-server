@@ -79,4 +79,14 @@ export class ResourcesService {
     await this.resourcesRepository.updateOne(resource, updateResourceDto);
     return resource;
   }
+
+  async getResourceDownloadUrl(resourceId: number) {
+    const resource = await this.resourcesRepository.findOneOrFail(resourceId);
+
+    const fileKey = resource.fileUrl.split("project-dev-bucket/")[1];
+
+    const downloadUrl = await this.fileUploadsService.getDownloadUrl(fileKey);
+
+    return downloadUrl;
+  }
 }

@@ -4,7 +4,6 @@ import { AssignmentsRepository } from "@/assignments/assignments.repository";
 import { FileUploadsService } from "@/file-uploads/file-uploads.service";
 import { StudentsRepository } from "@/students/students.repository";
 
-import { CreateAssignmentSubmissionDto } from "./assignment_submissions.dtos";
 import { AssignmentSubmissionsRepository } from "./assignment_submissions.repository";
 
 @Injectable()
@@ -18,10 +17,9 @@ export class AssignmentSubmissionsService {
 
   async submitOne(
     file: Express.Multer.File,
-    createAssignmentSubmissionDto: CreateAssignmentSubmissionDto,
+    assignmentId: number, // Directly use assignmentId from the param
+    userId: number, // Use userId from @CurrentUser
   ) {
-    const { assignmentId, userId } = createAssignmentSubmissionDto;
-
     const assignment = await this.assignmentsRepository.findOneOrFail(assignmentId);
 
     const student = await this.studentsRepository.findOneOrFail(
@@ -65,5 +63,17 @@ export class AssignmentSubmissionsService {
     await this.fileUploadsService.deleteFromS3(fileKey);
 
     await this.assignmentSubmissionsRepository.deleteOne(submission);
+  }
+
+  async getSubmissionStatus(assignmentId: number, userId: number): Promise<boolean> {
+    const assignment = await this.assignmentsRepository.findOneOrFail(assignmentId);
+    const student = await this.studentsRepository.findOneOrFail({ user: { id: userId } });
+
+    const submission = await this.assignmentSubmissionsRepository.findOne({
+      assignment,
+      student,
+    });
+
+    return !!submission;
   }
 }

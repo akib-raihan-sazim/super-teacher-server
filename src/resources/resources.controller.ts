@@ -48,4 +48,9 @@ export class ResourcesController {
   ) {
     return this.resourcesService.updateOne(resourceId, updateResourceDto, file);
   }
+
+  @Get(":classroomId/resources/:resourceId/download")
+  getResourceDownloadUrl(@Param("resourceId") resourceId: number) {
+    return this.resourcesService.getResourceDownloadUrl(resourceId);
+  }
 }
