@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsOptional, IsString, IsNumber } from "class-validator";
+import { Type } from "class-transformer";
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
 
 export class CreateMessageDto {
   @IsString()
@@ -7,9 +8,9 @@ export class CreateMessageDto {
 
   @IsOptional()
   @IsString()
-  attachmentURL?: string;
+  attachmentUrl?: string;
 
   @IsNotEmpty()
-  @IsNumber()
+  @Type(() => Number)
   classroomId!: number;
 }

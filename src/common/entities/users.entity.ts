@@ -33,6 +33,9 @@ export class User extends CustomBaseEntity {
   @Property({ fieldName: "password" })
   password!: string;
 
+  @Property({ fieldName: "gender", nullable: true })
+  gender?: string;
+
   @Enum(() => EUserType)
   @Property({ fieldName: "user_type" })
   userType!: EUserType;

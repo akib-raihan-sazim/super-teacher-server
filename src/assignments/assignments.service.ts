@@ -80,4 +80,14 @@ export class AssignmentsService {
 
     await this.assignmentsRepository.deleteOne(assignment);
   }
+
+  async getAssignmentDownloadUrl(assignmentId: number) {
+    const resource = await this.assignmentsRepository.findOneOrFail(assignmentId);
+
+    const fileKey = resource.fileUrl.split("project-dev-bucket/")[1];
+
+    const downloadUrl = await this.fileUploadsService.getDownloadUrl(fileKey);
+
+    return downloadUrl;
+  }
 }

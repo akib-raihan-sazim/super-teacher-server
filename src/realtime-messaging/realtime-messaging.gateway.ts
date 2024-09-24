@@ -24,7 +24,7 @@ export class RealtimeMessagingGateway {
   @SubscribeMessage("sendMessage")
   async handleMessage(client: Socket, payload: IMessagePayload) {
     const em = this.em.fork();
-    const { classroomId, content, userId } = payload;
+    const { id, classroomId, content, userId, attachmentUrl } = payload;
     const sender = (await em.getRepository(User).findOne(userId)) as User | null;
 
     if (!sender) {
@@ -33,8 +33,10 @@ export class RealtimeMessagingGateway {
     }
 
     this.server.to(`classroom-${classroomId}`).emit("receiveMessage", {
+      id,
       content,
       sender,
+      attachmentUrl,
       classroomId,
       timestamp: new Date(),
     });

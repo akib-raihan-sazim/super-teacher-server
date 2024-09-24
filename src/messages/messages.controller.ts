@@ -1,4 +1,14 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 import { CurrentUser } from "@/auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
@@ -17,11 +27,17 @@ export class MessagesController {
   ) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor("file"))
   async createMessage(
     @CurrentUser() user: { id: number },
+    @UploadedFile() file: Express.Multer.File,
     @Body() createMessageDto: CreateMessageDto,
   ) {
-    const message: Message = await this.messagesService.createMessage(createMessageDto, user.id);
+    const message: Message = await this.messagesService.createMessage(
+      createMessageDto,
+      user.id,
+      file,
+    );
     return this.messagesSerializer.serialize(message);
   }
 
@@ -29,5 +45,10 @@ export class MessagesController {
   async getMessagesForClassroom(@Param("classroomId") classroomId: number) {
     const messages = await this.messagesService.getMessagesByClassroom(classroomId);
     return this.messagesSerializer.serializeMany(messages);
+  }
+
+  @Get(":classroomId/messages/:messageId/download")
+  getResourceDownloadUrl(@Param("messageId") messageId: number) {
+    return this.messagesService.getMessageDownloadUrl(messageId);
   }
 }

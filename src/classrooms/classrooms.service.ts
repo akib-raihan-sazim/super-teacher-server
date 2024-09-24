@@ -114,4 +114,16 @@ export class ClassroomsService {
     );
     return this.classroomsRepository.updateOne(classroom, updateClassroomDto);
   }
+
+  async updateMeetLink(id: number, meetLink: string, userId: number): Promise<Classroom | null> {
+    await this.userRepository.findOneOrFail({ id: userId }, { populate: ["teacher"] });
+    const classroom = await this.classroomsRepository.findOneOrFail(
+      { id },
+      { populate: ["teacher"] },
+    );
+    classroom.meetLink = meetLink;
+    await this.em.persistAndFlush(classroom);
+
+    return classroom;
+  }
 }

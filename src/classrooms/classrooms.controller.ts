@@ -102,4 +102,19 @@ export class ClassroomsController {
     const enrollments = await this.enrollmentsService.getStudentsForClassroom(classroomId);
     return this.enrollmentSerializer.serializeMany(enrollments);
   }
+
+  @Put(":id/meet-link")
+  @Roles(EUserType.TEACHER)
+  async updateMeetLink(
+    @Param("id") id: number,
+    @CurrentUser() user: { id: number },
+    @Body() updateMeetLinkDto: { meetLink: string },
+  ): Promise<ClassroomResponseDto> {
+    const classroom = await this.classroomsService.updateMeetLink(
+      id,
+      updateMeetLinkDto.meetLink,
+      user.id,
+    );
+    return this.classroomsSerializer.serialize(classroom);
+  }
 }

@@ -30,6 +30,9 @@ export class Classroom extends CustomBaseEntity {
   @Property({ fieldName: "days", type: "array" })
   days!: string[];
 
+  @Property({ fieldName: "meet_link", nullable: true })
+  meetLink?: string;
+
   @ManyToOne(() => Teacher)
   teacher!: Rel<Teacher>;
 }

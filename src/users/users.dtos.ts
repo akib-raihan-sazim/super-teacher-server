@@ -15,6 +15,9 @@ export class CreateUserDto {
   @IsString()
   password!: string;
 
+  @IsString()
+  gender!: string;
+
   @IsEnum(EUserType)
   userType!: EUserType;
 }
