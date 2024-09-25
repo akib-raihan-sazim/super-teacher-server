@@ -25,4 +25,10 @@ export class ClassroomsRepository extends EntityRepository<Classroom> {
     await this.em.persistAndFlush(classroom);
     return classroom;
   }
+
+  async deleteMeetLink(classroom: Classroom): Promise<Classroom> {
+    classroom.meetLink = undefined;
+    await this.em.persistAndFlush(classroom);
+    return classroom;
+  }
 }

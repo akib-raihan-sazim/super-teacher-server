@@ -126,4 +126,16 @@ export class ClassroomsService {
 
     return classroom;
   }
+
+  async deleteMeetLink(id: number, userId: number): Promise<Classroom> {
+    const user = await this.userRepository.findOneOrFail({ id: userId });
+    const classroom = await this.classroomsRepository.findOneOrFail(
+      { id, teacher: user.teacher },
+      { populate: ["teacher"] },
+    );
+
+    await this.classroomsRepository.deleteMeetLink(classroom);
+
+    return classroom;
+  }
 }
