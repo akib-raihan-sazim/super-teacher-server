@@ -10,7 +10,12 @@ import { IEnrollment } from "@/enrollments/enrollments.interface";
 import { EnrollmentSerializer } from "@/enrollments/enrollments.serializer";
 import { EnrollmentsService } from "@/enrollments/enrollments.service";
 
-import { ClassroomResponseDto, CreateClassroomDto, UpdateClassroomDto } from "./classrooms.dtos";
+import {
+  ClassroomResponseDto,
+  CreateClassroomDto,
+  UpdateClassroomDto,
+  UploadMeetLinkDto,
+} from "./classrooms.dtos";
 import { ClassroomsSerializer } from "./classrooms.serializer";
 import { ClassroomsService } from "./classrooms.service";
 
@@ -103,15 +108,15 @@ export class ClassroomsController {
     return this.enrollmentSerializer.serializeMany(enrollments);
   }
 
-  @Put(":id/meet-link")
+  @Put(":classroomId/meet-link")
   @Roles(EUserType.TEACHER)
-  async updateMeetLink(
-    @Param("id") id: number,
+  async uploadMeetLink(
+    @Param("classroomId") classroomId: number,
     @CurrentUser() user: { id: number },
-    @Body() updateMeetLinkDto: { meetLink: string },
+    @Body() updateMeetLinkDto: UploadMeetLinkDto,
   ): Promise<ClassroomResponseDto> {
-    const classroom = await this.classroomsService.updateMeetLink(
-      id,
+    const classroom = await this.classroomsService.uploadMeetLink(
+      classroomId,
       updateMeetLinkDto.meetLink,
       user.id,
     );
