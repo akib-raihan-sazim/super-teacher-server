@@ -11,6 +11,7 @@ import { EntityManager } from "@mikro-orm/core";
 import * as bcrypt from "bcrypt";
 
 import { User } from "@/common/entities/users.entity";
+import { OtpService } from "@/otp/otp.service";
 import { UsersService } from "@/users/users.service";
 
 import { UniqueCodeService } from "../unique-code/unique-code.service";
@@ -26,6 +27,7 @@ export class AuthService {
     private readonly userService: UsersService,
     private readonly jwtService: JwtService,
     private readonly em: EntityManager,
+    private readonly otpService: OtpService,
   ) {}
 
   private createToken(user: User): string {
@@ -91,5 +93,32 @@ export class AuthService {
       }
     }
     return user;
+  }
+
+  async generateResetPasswordOtp(email: string): Promise<string> {
+    const user = await this.userService.findUserByEmail(email);
+    if (!user) {
+      throw new BadRequestException("No user found with this email.");
+    }
+
+    const otpCode = await this.otpService.generateOtp(email);
+    return otpCode;
+  }
+
+  async resetPassword(email: string, otpCode: string, newPassword: string): Promise<boolean> {
+    const isValidOtp = await this.otpService.validateOtp(email, otpCode);
+    if (!isValidOtp) {
+      throw new BadRequestException("Invalid OTP.");
+    }
+
+    const user = await this.userService.findUserByEmail(email);
+    if (!user) {
+      throw new BadRequestException("No user found with this email.");
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    user.password = hashedPassword;
+
+    await this.em.persistAndFlush(user);
+    return true;
   }
 }

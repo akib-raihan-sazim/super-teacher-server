@@ -23,4 +23,18 @@ export class AuthController {
   login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
     return this.authService.login(loginDto);
   }
+
+  @Post("reset-password/generate-otp")
+  generateResetPasswordOtp(@Body("email") email: string): Promise<string> {
+    return this.authService.generateResetPasswordOtp(email);
+  }
+
+  @Post("reset-password")
+  resetPassword(
+    @Body("email") email: string,
+    @Body("otp") otpCode: string,
+    @Body("newPassword") newPassword: string,
+  ): Promise<boolean> {
+    return this.authService.resetPassword(email, otpCode, newPassword);
+  }
 }

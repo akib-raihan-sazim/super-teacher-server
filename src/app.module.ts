@@ -17,6 +17,7 @@ import { ExamsModule } from "./exams/exams.module";
 import { FileUploadsModule } from "./file-uploads/file-uploads.module";
 import { MailModule } from "./mail/mail.module";
 import { MessagesModule } from "./messages/messages.module";
+import { OtpModule } from "./otp/otp.module";
 import { RealtimeMessagingModule } from "./realtime-messaging/realtime-messaging.module";
 import { ResourcesModule } from "./resources/resources.module";
 import { StudentsModule } from "./students/students.module";
@@ -50,6 +51,7 @@ import { UsersModule } from "./users/users.module";
     ExamsModule,
     AssignmentsModule,
     AssignmentSubmissionsModule,
+    OtpModule,
   ],
   controllers: [],
   providers: [

@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 
+import { OtpModule } from "@/otp/otp.module";
 import { UniqueCodeModule } from "@/unique-code/unique-code.module";
 
 import { UsersModule } from "../users/users.module";
@@ -14,6 +15,7 @@ import { LocalStrategy } from "./strategies/local.strategy";
 
 @Module({
   imports: [
+    OtpModule,
     UsersModule,
     UniqueCodeModule,
     PassportModule,
