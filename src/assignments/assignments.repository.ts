@@ -22,4 +22,8 @@ export class AssignmentsRepository extends EntityRepository<Assignment> {
     await this.em.persistAndFlush(assignment);
     return assignment;
   }
+
+  async deleteOne(assignment: Assignment): Promise<void> {
+    await this.em.removeAndFlush(assignment);
+  }
 }

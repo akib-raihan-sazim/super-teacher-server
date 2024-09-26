@@ -1,6 +1,7 @@
 import { Injectable } from "@nestjs/common";
 
 import { ClassroomsRepository } from "@/classrooms/classrooms.repository";
+import { Assignment } from "@/common/entities/assignments.entity";
 import { FileUploadsService } from "@/file-uploads/file-uploads.service";
 
 import { CreateAssignmentDto, UpdateAssignmentDto, UploadAssignmentDto } from "./assignments.dtos";
@@ -40,16 +41,20 @@ export class AssignmentsService {
     return assignment;
   }
 
-  async getAssignmentsByClassroomId(classroomId: number) {
+  async getAssignmentsByClassroomId(classroomId: number): Promise<Assignment[]> {
     const classroom = await this.classroomsRepository.findOneOrFail({ id: classroomId });
-    return this.assignmentsRepository.find({ classroom });
+    const assignments = await this.assignmentsRepository.find(
+      { classroom },
+      { populate: ["classroom"] },
+    );
+    return assignments;
   }
 
-  async updateAssignment(
+  async updateOne(
     assignmentId: number,
     updateAssignmentDto: UpdateAssignmentDto,
     file?: Express.Multer.File,
-  ) {
+  ): Promise<Assignment> {
     const assignment = await this.assignmentsRepository.findOneOrFail(assignmentId);
     if (file) {
       const oldFileKey = assignment.fileUrl.split("project-dev-bucket/")[1];
@@ -59,9 +64,20 @@ export class AssignmentsService {
       if (!uploadResponse.ok) {
         throw new Error("Failed to upload file to S3");
       }
-      updateAssignmentDto.fileUrl = presignedUrl.split("?")[0];
+      updateAssignmentDto.fileUrl = uploadResponse.url.split("?")[0];
     }
 
-    return this.assignmentsRepository.updateOne(assignment, updateAssignmentDto);
+    this.assignmentsRepository.updateOne(assignment, updateAssignmentDto);
+    return assignment;
+  }
+
+  async deleteOne(assignmentId: number): Promise<void> {
+    const assignment = await this.assignmentsRepository.findOneOrFail(assignmentId);
+
+    const fileKey = assignment.fileUrl.split("project-dev-bucket/")[1];
+
+    await this.fileUploadsService.deleteFromS3(fileKey);
+
+    await this.assignmentsRepository.deleteOne(assignment);
   }
 }
