@@ -1,7 +1,16 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Param, Body, Get } from "@nestjs/common";
+import {
+  Controller,
+  Post,
+  UseInterceptors,
+  UploadedFile,
+  Param,
+  Body,
+  Get,
+  Put,
+} from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 
-import { UploadAssignmentDto } from "./assignments.dtos";
+import { UpdateAssignmentDto, UploadAssignmentDto } from "./assignments.dtos";
 import { AssignmentsSerializer } from "./assignments.serializer";
 import { AssignmentsService } from "./assignments.service";
 
@@ -30,5 +39,16 @@ export class AssignmentsController {
   @Get(":classroomId/assignments")
   getAssignments(@Param("classroomId") classroomId: number) {
     return this.assignmentsService.getAssignmentsByClassroomId(classroomId);
+  }
+
+  @Put(":classroomId/assignments/:assignmentId")
+  @UseInterceptors(FileInterceptor("file"))
+  editAssignment(
+    @Param("assignmentId") assignmentId: number,
+    @Param("classroomId") classroomId: number,
+    @Body() updateAssignmentDto: UpdateAssignmentDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.assignmentsService.updateAssignment(assignmentId, updateAssignmentDto, file);
   }
 }
