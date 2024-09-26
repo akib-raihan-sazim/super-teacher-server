@@ -57,4 +57,13 @@ export class AssignmentSubmissionsService {
 
     return submissions;
   }
+
+  async deleteOne(submissionId: number): Promise<void> {
+    const submission = await this.assignmentSubmissionsRepository.findOneOrFail(submissionId);
+
+    const fileKey = submission.fileUrl.split("project-dev-bucket/")[1];
+    await this.fileUploadsService.deleteFromS3(fileKey);
+
+    await this.assignmentSubmissionsRepository.deleteOne(submission);
+  }
 }
