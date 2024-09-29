@@ -24,12 +24,20 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  @Post("reset-password/generate-otp")
-  generateResetPasswordOtp(@Body("email") email: string): Promise<string> {
-    return this.authService.generateResetPasswordOtp(email);
+  @Post("forget-password/generate-otp")
+  generateResetPasswordOtp(@Body("email") email: string): void {
+    this.authService.generateResetPasswordOtp(email);
   }
 
-  @Post("reset-password")
+  @Post("forget-password/validate-otp")
+  validateOtp(
+    @Body("email") email: string,
+    @Body("otp") otpCode: string,
+  ): Promise<{ isValid: boolean }> {
+    return this.authService.validateOtp(email, otpCode);
+  }
+
+  @Post("forget-password")
   resetPassword(
     @Body("email") email: string,
     @Body("otp") otpCode: string,

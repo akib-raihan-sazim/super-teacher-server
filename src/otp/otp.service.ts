@@ -38,8 +38,11 @@ export class OtpService {
       await this.otpRepository.removeOne(otp);
       throw new BadRequestException("OTP has expired");
     }
-
-    await this.otpRepository.removeOne(otp);
     return true;
+  }
+
+  async removeOtp(email: string, otpCode: string): Promise<void> {
+    const otp = await this.otpRepository.findOneOrFail({ email, otp: otpCode });
+    await this.otpRepository.removeOne(otp);
   }
 }
