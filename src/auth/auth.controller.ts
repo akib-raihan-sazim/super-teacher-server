@@ -1,7 +1,13 @@
 import { Controller, Post, Body, UseGuards } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 
-import { AuthResponseDto, LoginDto, RegisterStudentDto, RegisterTeacherDto } from "./auth.dtos";
+import {
+  AuthResponseDto,
+  LoginDto,
+  RegisterStudentDto,
+  RegisterTeacherDto,
+  ResetPasswordDto,
+} from "./auth.dtos";
 import { AuthService } from "./auth.service";
 
 @Controller("auth")
@@ -30,11 +36,8 @@ export class AuthController {
   }
 
   @Post("reset-password")
-  resetPassword(
-    @Body("email") email: string,
-    @Body("otp") otpCode: string,
-    @Body("newPassword") newPassword: string,
-  ): Promise<boolean> {
-    return this.authService.resetPassword(email, otpCode, newPassword);
+  resetPassword(@Body() resetPasswordDto: ResetPasswordDto): Promise<boolean> {
+    const { email, otp, newPassword } = resetPasswordDto;
+    return this.authService.resetPassword(email, otp, newPassword);
   }
 }

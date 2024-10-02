@@ -10,6 +10,10 @@ export class OtpRepository extends EntityRepository<Otp> {
     await this.em.persistAndFlush(otp);
   }
 
+  async updateOne(otp: Otp): Promise<void> {
+    await this.em.persistAndFlush(otp);
+  }
+
   async removeOne(otp: Otp): Promise<void> {
     await this.em.removeAndFlush(otp);
   }

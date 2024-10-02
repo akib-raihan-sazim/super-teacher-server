@@ -113,12 +113,14 @@ export class AuthService {
 
   async resetPassword(email: string, otpCode: string, newPassword: string): Promise<boolean> {
     await this.otpService.validateOtp(email, otpCode);
-
     const user = await this.userService.findUserByEmail(email);
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    user!.password = hashedPassword;
+    this.em.assign(user, { password: hashedPassword });
+    await this.em.persistAndFlush(user);
 
-    await this.em.persistAndFlush(user!);
     return true;
   }
 }

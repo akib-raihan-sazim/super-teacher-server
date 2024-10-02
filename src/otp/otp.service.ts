@@ -15,19 +15,23 @@ export class OtpService {
   }
 
   async generateOtp(email: string): Promise<string> {
-    const existingOtp = await this.otpRepository.findOne({ email });
+    const otpCode = this.generateRandomOtp();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    if (existingOtp) {
-      await this.otpRepository.removeOne(existingOtp);
+    let otp = await this.otpRepository.findOne({ email });
+
+    if (otp) {
+      otp.otp = otpCode;
+      otp.expiresAt = expiresAt;
+    } else {
+      otp = new Otp();
+      otp.email = email;
+      otp.otp = otpCode;
+      otp.expiresAt = expiresAt;
     }
 
-    const otpCode = this.generateRandomOtp();
-    const otp = new Otp();
-    otp.email = email;
-    otp.otp = otpCode;
-    otp.expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    await this.otpRepository.updateOne(otp);
 
-    await this.otpRepository.createOne(otp);
     return otpCode;
   }
 
