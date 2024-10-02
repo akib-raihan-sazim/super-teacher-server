@@ -122,4 +122,14 @@ export class ClassroomsController {
     );
     return this.classroomsSerializer.serialize(classroom);
   }
+
+  @Delete(":classroomId/meet-link")
+  @Roles(EUserType.TEACHER)
+  async deleteMeetLink(
+    @Param("classroomId") classroomId: number,
+    @CurrentUser() user: { id: number },
+  ): Promise<ClassroomResponseDto> {
+    const classroom = await this.classroomsService.deleteMeetLink(classroomId, user.id);
+    return this.classroomsSerializer.serialize(classroom);
+  }
 }
