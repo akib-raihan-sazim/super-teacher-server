@@ -19,4 +19,10 @@ export class ClassroomsRepository extends EntityRepository<Classroom> {
     await this.em.persistAndFlush(classroom);
     return classroom;
   }
+
+  async uploadMeetLink(classroom: Classroom, meetLink: string): Promise<Classroom> {
+    classroom.meetLink = meetLink;
+    await this.em.persistAndFlush(classroom);
+    return classroom;
+  }
 }

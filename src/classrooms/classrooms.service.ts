@@ -115,14 +115,14 @@ export class ClassroomsService {
     return this.classroomsRepository.updateOne(classroom, updateClassroomDto);
   }
 
-  async updateMeetLink(id: number, meetLink: string, userId: number): Promise<Classroom | null> {
-    await this.userRepository.findOneOrFail({ id: userId }, { populate: ["teacher"] });
+  async uploadMeetLink(id: number, meetLink: string, userId: number): Promise<Classroom> {
+    const user = await this.userRepository.findOneOrFail({ id: userId });
     const classroom = await this.classroomsRepository.findOneOrFail(
-      { id },
+      { id, teacher: user.teacher },
       { populate: ["teacher"] },
     );
-    classroom.meetLink = meetLink;
-    await this.em.persistAndFlush(classroom);
+
+    await this.classroomsRepository.uploadMeetLink(classroom, meetLink);
 
     return classroom;
   }

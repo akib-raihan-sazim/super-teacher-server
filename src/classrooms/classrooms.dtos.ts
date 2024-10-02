@@ -68,3 +68,9 @@ export class UpdateClassroomDto {
   @IsString()
   meetLink?: string;
 }
+
+export class UploadMeetLinkDto {
+  @IsString()
+  @IsNotEmpty()
+  meetLink!: string;
+}
