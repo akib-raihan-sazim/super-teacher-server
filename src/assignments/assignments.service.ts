@@ -2,7 +2,9 @@ import { Injectable } from "@nestjs/common";
 
 import { ClassroomsRepository } from "@/classrooms/classrooms.repository";
 import { Assignment } from "@/common/entities/assignments.entity";
+import { EnrollmentsRepository } from "@/enrollments/enrollments.repository";
 import { FileUploadsService } from "@/file-uploads/file-uploads.service";
+import { MailService } from "@/mail/mail.service";
 
 import { CreateAssignmentDto, UpdateAssignmentDto, UploadAssignmentDto } from "./assignments.dtos";
 import { AssignmentsRepository } from "./assignments.repository";
@@ -13,6 +15,8 @@ export class AssignmentsService {
     private readonly assignmentsRepository: AssignmentsRepository,
     private readonly fileUploadsService: FileUploadsService,
     private readonly classroomsRepository: ClassroomsRepository,
+    private readonly mailService: MailService,
+    private readonly enrolllmentsRepository: EnrollmentsRepository,
   ) {}
 
   async uploadOne(
@@ -23,7 +27,6 @@ export class AssignmentsService {
     const classroom = await this.classroomsRepository.findOneOrFail({ id: classroomId });
 
     const presignedUrl = await this.fileUploadsService.getPresignedUrl(file);
-
     const uploadResponse = await this.fileUploadsService.uploadToS3(presignedUrl, file);
 
     if (!uploadResponse.ok) {
@@ -37,6 +40,23 @@ export class AssignmentsService {
     };
 
     const assignment = await this.assignmentsRepository.createOne(createAssignmentDto);
+
+    const enrollments = await this.enrolllmentsRepository.find(
+      { classroom: classroom },
+      { populate: ["student", "student.user"] },
+    );
+
+    for (const enrollment of enrollments) {
+      const { email } = enrollment.student.user;
+
+      await this.mailService.sendEmail(
+        email,
+        `New Assignment: ${uploadAssignmentDto.title}`,
+        `An assignment has been posted for ${
+          classroom.title
+        }. Due date: ${uploadAssignmentDto.dueDate.toLocaleDateString()}.`,
+      );
+    }
 
     return assignment;
   }

@@ -1,7 +1,9 @@
 import { Injectable } from "@nestjs/common";
 
 import { ClassroomsRepository } from "@/classrooms/classrooms.repository";
+import { EnrollmentsRepository } from "@/enrollments/enrollments.repository";
 import { FileUploadsService } from "@/file-uploads/file-uploads.service";
+import { MailService } from "@/mail/mail.service";
 import { CreateResourceDto, UpdateResourceDto } from "@/resources/resources.dtos";
 import { ResourcesRepository } from "@/resources/resources.repository";
 
@@ -11,6 +13,8 @@ export class ResourcesService {
     private readonly classroomsRepository: ClassroomsRepository,
     private readonly fileUploadsService: FileUploadsService,
     private readonly resourcesRepository: ResourcesRepository,
+    private readonly enrollmentsRepository: EnrollmentsRepository,
+    private readonly mailService: MailService,
   ) {}
 
   async uploadOne(
@@ -22,7 +26,6 @@ export class ResourcesService {
     const classroom = await this.classroomsRepository.findOneOrFail({ id: classroomId });
 
     const presignedUrl = await this.fileUploadsService.getPresignedUrl(file);
-
     const uploadResponse = await this.fileUploadsService.uploadToS3(presignedUrl, file);
 
     if (!uploadResponse.ok) {
@@ -37,6 +40,22 @@ export class ResourcesService {
     };
 
     const resource = await this.resourcesRepository.createOne(createResourceDto);
+
+    const enrollments = await this.enrollmentsRepository.find(
+      { classroom: classroom },
+      { populate: ["student", "student.user"] },
+    );
+
+    for (const enrollment of enrollments) {
+      const email = enrollment.student.user.email;
+      await this.mailService.sendEmail(
+        email,
+        `New Material Uploaded: ${title}`,
+        `
+        A new resource titled "${title}" has been uploaded in your class "${classroom.title}". 
+        `,
+      );
+    }
 
     return resource;
   }
