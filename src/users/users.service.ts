@@ -23,4 +23,16 @@ export class UsersService {
     const user = await this.em.findOne(User, { email });
     return user;
   }
+
+  async getDetails(userId: number): Promise<User> {
+    const user = await this.userRepository.findOneOrFail(userId);
+
+    if (user.userType === "student") {
+      return this.userRepository.findOneOrFail(userId, { populate: ["student"] });
+    } else if (user.userType === "teacher") {
+      return this.userRepository.findOneOrFail(userId, { populate: ["teacher"] });
+    }
+
+    return user;
+  }
 }
