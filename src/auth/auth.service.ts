@@ -11,6 +11,8 @@ import { EntityManager } from "@mikro-orm/core";
 import * as bcrypt from "bcrypt";
 
 import { User } from "@/common/entities/users.entity";
+import { MailService } from "@/mail/mail.service";
+import { OtpService } from "@/otp/otp.service";
 import { UsersService } from "@/users/users.service";
 
 import { UniqueCodeService } from "../unique-code/unique-code.service";
@@ -21,6 +23,8 @@ import { AuthRepository } from "./auth.repository";
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly mailService: MailService,
+    private readonly otpService: OtpService,
     private readonly authRepository: AuthRepository,
     private readonly uniqueCodeService: UniqueCodeService,
     private readonly userService: UsersService,
@@ -91,5 +95,32 @@ export class AuthService {
       }
     }
     return user;
+  }
+
+  async generateResetPasswordOtp(email: string): Promise<string> {
+    const user = await this.userService.findUserByEmail(email);
+
+    const otpCode = await this.otpService.generateOtp(email);
+
+    await this.mailService.sendEmail(
+      user!.email,
+      "Password Reset OTP",
+      `Hello ${user!.firstName}, your OTP for resetting the password is: ${otpCode}`,
+    );
+
+    return otpCode;
+  }
+
+  async resetPassword(email: string, otpCode: string, newPassword: string): Promise<boolean> {
+    await this.otpService.validateOtp(email, otpCode);
+    const user = await this.userService.findUserByEmail(email);
+    if (!user) {
+      throw new BadRequestException("User not found");
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    this.em.assign(user, { password: hashedPassword });
+    await this.em.persistAndFlush(user);
+
+    return true;
   }
 }

@@ -110,3 +110,14 @@ export class AuthResponseDto {
     this.token = token;
   }
 }
+
+export class ResetPasswordDto {
+  @IsEmail()
+  email!: string;
+
+  @IsString()
+  otp!: string;
+
+  @IsString()
+  newPassword!: string;
+}
