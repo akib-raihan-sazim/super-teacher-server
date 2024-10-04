@@ -1,13 +1,15 @@
-import { Injectable, InternalServerErrorException } from "@nestjs/common";
+import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
 
 import { EntityManager } from "@mikro-orm/postgresql";
+
+import * as bcrypt from "bcrypt";
 
 import { User } from "@/common/entities/users.entity";
 import { EUserType } from "@/common/enums/users.enums";
 import { StudentsRepository } from "@/students/students.repository";
 import { TeachersRepository } from "@/teachers/teachers.repository";
 
-import { CreateUserDto, EditUserDto } from "./users.dtos";
+import { CreateUserDto, EditUserDto, ResetPasswordDto } from "./users.dtos";
 import { UserRepository } from "./users.repository";
 
 @Injectable()
@@ -68,5 +70,20 @@ export class UsersService {
       this.teachersRepository.updateTeacherFields(user.teacher, teacherDto);
     }
     return user;
+  }
+
+  async resetPassword(userId: number, resetPasswordDto: ResetPasswordDto): Promise<void> {
+    const user = await this.userRepository.findOneOrFail(userId);
+
+    const isOldPasswordValid = await bcrypt.compare(resetPasswordDto.oldPassword, user.password);
+    if (!isOldPasswordValid) {
+      throw new UnauthorizedException("Old password is incorrect");
+    }
+
+    if (resetPasswordDto.oldPassword === resetPasswordDto.newPassword) {
+      throw new BadRequestException("Cannot set a previously used password");
+    }
+
+    await this.userRepository.updateUserPassword(user, resetPasswordDto.newPassword);
   }
 }

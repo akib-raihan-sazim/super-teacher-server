@@ -104,3 +104,11 @@ export class EditUserDto {
   @Type(() => EditTeacherDto)
   teacher?: EditTeacherDto;
 }
+
+export class ResetPasswordDto {
+  @IsString()
+  oldPassword!: string;
+
+  @IsString()
+  newPassword!: string;
+}

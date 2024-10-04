@@ -5,7 +5,7 @@ import { CurrentUser } from "@/auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
 import { User } from "@/common/entities/users.entity";
 
-import { CreateUserDto, EditUserDto } from "./users.dtos";
+import { CreateUserDto, EditUserDto, ResetPasswordDto } from "./users.dtos";
 import { UsersSerializer } from "./users.serializer";
 import { UsersService } from "./users.service";
 
@@ -42,5 +42,14 @@ export class UsersController {
   ): Promise<User> {
     const updatedUser = await this.usersService.editUser(currentUser.id, editUserDto);
     return this.usersSerializer.serialize(updatedUser);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put("reset-password")
+  async resetPassword(
+    @Body() resetPasswordDto: ResetPasswordDto,
+    @CurrentUser() currentUser: { id: number },
+  ): Promise<void> {
+    await this.usersService.resetPassword(currentUser.id, resetPasswordDto);
   }
 }
