@@ -1,11 +1,11 @@
-import { Controller, Post, Body, UseGuards, Get } from "@nestjs/common";
+import { Controller, Post, Body, UseGuards, Get, Put } from "@nestjs/common";
 
 import { ITokenizedUser } from "@/auth/auth.interfaces";
 import { CurrentUser } from "@/auth/decorators/current-user.decorator";
 import { JwtAuthGuard } from "@/auth/guards/jwt-auth.guard";
 import { User } from "@/common/entities/users.entity";
 
-import { CreateUserDto } from "./users.dtos";
+import { CreateUserDto, EditUserDto } from "./users.dtos";
 import { UsersSerializer } from "./users.serializer";
 import { UsersService } from "./users.service";
 
@@ -32,5 +32,15 @@ export class UsersController {
   async getUserDetails(@CurrentUser() currentUser: { id: number }): Promise<User> {
     const user = await this.usersService.getDetails(currentUser.id);
     return this.usersSerializer.serialize(user);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Put("user-details")
+  async editUser(
+    @Body() editUserDto: EditUserDto,
+    @CurrentUser() currentUser: { id: number },
+  ): Promise<User> {
+    const updatedUser = await this.usersService.editUser(currentUser.id, editUserDto);
+    return this.usersSerializer.serialize(updatedUser);
   }
 }
