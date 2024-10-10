@@ -28,6 +28,6 @@ export class Resources extends CustomBaseEntity {
   @Property({ fieldName: "file_url" })
   fileUrl!: string;
 
-  @ManyToOne(() => Classroom)
+  @ManyToOne(() => Classroom, { deleteRule: "cascade" })
   classroom!: Rel<Classroom>;
 }

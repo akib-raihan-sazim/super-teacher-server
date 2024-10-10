@@ -23,7 +23,7 @@ export class AssignmentSubmission extends CustomBaseEntity {
   @Property({ fieldName: "file_url" })
   fileUrl!: string;
 
-  @ManyToOne(() => Assignment)
+  @ManyToOne(() => Assignment, { deleteRule: "cascade" })
   assignment!: Rel<Assignment>;
 
   @ManyToOne(() => Student)

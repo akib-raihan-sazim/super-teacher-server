@@ -68,4 +68,9 @@ export class AssignmentSubmissionsController {
     );
     return status;
   }
+
+  @Get(":classroomId/submissions/:submissionId/download")
+  getResourceDownloadUrl(@Param("submissionId") submissionId: number) {
+    return this.assignmentSubmissionsService.getAssignmentSubmmissonDownloadUrl(submissionId);
+  }
 }

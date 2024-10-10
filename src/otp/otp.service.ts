@@ -15,23 +15,19 @@ export class OtpService {
   }
 
   async generateOtp(email: string): Promise<string> {
-    const otpCode = this.generateRandomOtp();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    const existingOtp = await this.otpRepository.findOne({ email });
 
-    let otp = await this.otpRepository.findOne({ email });
-
-    if (otp) {
-      otp.otp = otpCode;
-      otp.expiresAt = expiresAt;
-    } else {
-      otp = new Otp();
-      otp.email = email;
-      otp.otp = otpCode;
-      otp.expiresAt = expiresAt;
+    if (existingOtp) {
+      await this.otpRepository.removeOne(existingOtp);
     }
 
-    await this.otpRepository.updateOne(otp);
+    const otpCode = this.generateRandomOtp();
+    const otp = new Otp();
+    otp.email = email;
+    otp.otp = otpCode;
+    otp.expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
+    await this.otpRepository.createOne(otp);
     return otpCode;
   }
 
@@ -42,8 +38,11 @@ export class OtpService {
       await this.otpRepository.removeOne(otp);
       throw new BadRequestException("OTP has expired");
     }
-
-    await this.otpRepository.removeOne(otp);
     return true;
+  }
+
+  async removeOtp(email: string, otpCode: string): Promise<void> {
+    const otp = await this.otpRepository.findOneOrFail({ email, otp: otpCode });
+    await this.otpRepository.removeOne(otp);
   }
 }

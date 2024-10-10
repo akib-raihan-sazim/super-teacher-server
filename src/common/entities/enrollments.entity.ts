@@ -15,6 +15,6 @@ export class Enrollment extends CustomBaseEntity {
   @ManyToOne(() => Student)
   student!: Rel<Student>;
 
-  @ManyToOne(() => Classroom)
+  @ManyToOne(() => Classroom, { deleteRule: "cascade" })
   classroom!: Rel<Classroom>;
 }

@@ -31,6 +31,6 @@ export class Assignment extends CustomBaseEntity {
   @Property({ fieldName: "due_date" })
   dueDate!: Date;
 
-  @ManyToOne(() => Classroom)
+  @ManyToOne(() => Classroom, { deleteRule: "cascade" })
   classroom!: Rel<Classroom>;
 }

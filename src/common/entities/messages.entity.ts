@@ -29,6 +29,6 @@ export class Message extends CustomBaseEntity {
   @ManyToOne(() => User)
   sender!: Rel<User>;
 
-  @ManyToOne(() => Classroom)
+  @ManyToOne(() => Classroom, { deleteRule: "cascade" })
   classroom!: Rel<Classroom>;
 }

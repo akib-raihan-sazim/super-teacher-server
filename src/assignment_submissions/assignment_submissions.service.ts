@@ -15,11 +15,7 @@ export class AssignmentSubmissionsService {
     private readonly studentsRepository: StudentsRepository,
   ) {}
 
-  async submitOne(
-    file: Express.Multer.File,
-    assignmentId: number, // Directly use assignmentId from the param
-    userId: number, // Use userId from @CurrentUser
-  ) {
+  async submitOne(file: Express.Multer.File, assignmentId: number, userId: number) {
     const assignment = await this.assignmentsRepository.findOneOrFail(assignmentId);
 
     const student = await this.studentsRepository.findOneOrFail(
@@ -82,5 +78,15 @@ export class AssignmentSubmissionsService {
     } else {
       return { submitted: false };
     }
+  }
+
+  async getAssignmentSubmmissonDownloadUrl(submissionId: number) {
+    const resource = await this.assignmentSubmissionsRepository.findOneOrFail(submissionId);
+
+    const fileKey = resource.fileUrl.split("project-dev-bucket/")[1];
+
+    const downloadUrl = await this.fileUploadsService.getDownloadUrl(fileKey);
+
+    return downloadUrl;
   }
 }

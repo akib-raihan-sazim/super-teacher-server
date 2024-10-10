@@ -28,6 +28,6 @@ export class Exam extends CustomBaseEntity {
   @Property({ fieldName: "exam_date" })
   date!: Date;
 
-  @ManyToOne(() => Classroom)
+  @ManyToOne(() => Classroom, { deleteRule: "cascade" })
   classroom!: Rel<Classroom>;
 }

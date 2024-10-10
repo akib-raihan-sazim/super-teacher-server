@@ -97,7 +97,7 @@ export class AuthService {
     return user;
   }
 
-  async generateResetPasswordOtp(email: string): Promise<string> {
+  async generateResetPasswordOtp(email: string): Promise<void> {
     const user = await this.userService.findUserByEmail(email);
 
     const otpCode = await this.otpService.generateOtp(email);
@@ -107,20 +107,24 @@ export class AuthService {
       "Password Reset OTP",
       `Hello ${user!.firstName}, your OTP for resetting the password is: ${otpCode}`,
     );
+  }
 
-    return otpCode;
+  async validateOtp(email: string, otpCode: string): Promise<{ isValid: boolean }> {
+    try {
+      await this.otpService.validateOtp(email, otpCode);
+      return { isValid: true };
+    } catch (error) {
+      return { isValid: false };
+    }
   }
 
   async resetPassword(email: string, otpCode: string, newPassword: string): Promise<boolean> {
-    await this.otpService.validateOtp(email, otpCode);
     const user = await this.userService.findUserByEmail(email);
-    if (!user) {
-      throw new BadRequestException("User not found");
-    }
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    this.em.assign(user, { password: hashedPassword });
-    await this.em.persistAndFlush(user);
+    user!.password = hashedPassword;
 
+    await this.em.persistAndFlush(user!);
+    await this.otpService.removeOtp(email, otpCode);
     return true;
   }
 }
