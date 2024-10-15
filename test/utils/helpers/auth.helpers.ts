@@ -3,6 +3,7 @@ import { EntityManager } from "@mikro-orm/core";
 import { faker } from "@faker-js/faker";
 import * as bcrypt from "bcrypt";
 
+import { Otp } from "@/common/entities/otp.entity";
 import { UniqueCode } from "@/common/entities/unique_codes.entity";
 import { User } from "@/common/entities/users.entity";
 import { EEducationLevel, EMedium } from "@/common/enums/students.enums";
@@ -71,4 +72,18 @@ export const createUniqueCode = async (
   });
   await dbService.persistAndFlush(uniqueCode);
   return uniqueCode;
+};
+
+export const createOtp = async (
+  dbService: EntityManager,
+  email: string,
+  otpCode: string,
+): Promise<Otp> => {
+  const otp = dbService.create(Otp, {
+    email,
+    otp: otpCode,
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+  });
+  await dbService.persistAndFlush(otp);
+  return otp;
 };
