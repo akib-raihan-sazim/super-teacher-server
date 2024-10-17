@@ -180,4 +180,72 @@ describe("ClassroomsController (e2e)", () => {
         .expect(HttpStatus.NOT_FOUND);
     });
   });
+
+  describe("DELETE /classrooms/:id", () => {
+    let teacherUser: User;
+    let teacherToken: string;
+    let studentUser: User;
+    let studentToken: string;
+    let classroom: Classroom;
+
+    beforeEach(async () => {
+      const {
+        user: teacherUserData,
+        teacher,
+        plainTextPassword: teacherPassword,
+      } = await UserFactory.createTeacher();
+      teacherUser = await createTeacherInDb(dbService, teacherUserData, teacher);
+      teacherToken = await getAccessToken(httpServer, teacherUser.email, teacherPassword);
+
+      const {
+        user: studentUserData,
+        student,
+        plainTextPassword: studentPassword,
+      } = await UserFactory.createStudent();
+      studentUser = await createStudentInDb(dbService, studentUserData, student);
+      studentToken = await getAccessToken(httpServer, studentUser.email, studentPassword);
+
+      classroom = await createClassroomInDb(dbService, teacherUser.teacher!);
+    });
+
+    it("should delete classroom successfully when teacher is authenticated", async () => {
+      const response = await request(httpServer)
+        .delete(`/classrooms/${classroom.id}`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(response.body).toBeTruthy();
+
+      const deletedClassroom = await dbService.findOne(Classroom, { id: classroom.id });
+      expect(deletedClassroom).toBeNull();
+    });
+
+    it("should return 403 Forbidden when student tries to delete the classroom", async () => {
+      await request(httpServer)
+        .delete(`/classrooms/${classroom.id}`)
+        .set("Authorization", `Bearer ${studentToken}`)
+        .expect(HttpStatus.FORBIDDEN);
+
+      const existingClassroom = await dbService.findOne(Classroom, { id: classroom.id });
+      expect(existingClassroom).not.toBeNull();
+    });
+
+    it("should return 401 Unauthorized when no token is provided", async () => {
+      await request(httpServer)
+        .delete(`/classrooms/${classroom.id}`)
+        .expect(HttpStatus.UNAUTHORIZED);
+
+      const existingClassroom = await dbService.findOne(Classroom, { id: classroom.id });
+      expect(existingClassroom).not.toBeNull();
+    });
+
+    it("should return 404 Not Found when classroom doesn't exist", async () => {
+      const nonExistentId = 9999;
+
+      await request(httpServer)
+        .delete(`/classrooms/${nonExistentId}`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+  });
 });
