@@ -164,12 +164,7 @@ describe("UsersController (e2e)", () => {
 
     beforeEach(async () => {
       user = await createUser(dbService, EUserType.STUDENT);
-      token = jwtService.sign({
-        id: user.id,
-        firstName: user.firstName,
-        email: user.email,
-        userType: user.userType,
-      });
+      token = await getAccessToken(httpServer, user.email, oldPassword);
     });
 
     it("should reset password successfully", async () => {
