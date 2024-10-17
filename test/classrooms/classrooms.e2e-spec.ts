@@ -5,7 +5,9 @@ import { EntityManager, IDatabaseDriver, Connection, MikroORM } from "@mikro-orm
 import request from "supertest";
 
 import { Classroom } from "@/common/entities/classrooms.entity";
+import { Enrollment } from "@/common/entities/enrollments.entity";
 import { User } from "@/common/entities/users.entity";
+import { MailService } from "@/mail/mail.service";
 
 import { bootstrapTestServer } from "../utils/bootstrap";
 import { truncateTables } from "../utils/db";
@@ -177,6 +179,117 @@ describe("ClassroomsController (e2e)", () => {
       await request(httpServer)
         .get(`/classrooms/${nonExistentId}`)
         .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+  });
+
+  describe("POST /classrooms/:id/enroll", () => {
+    let teacherUser: User;
+    let teacherToken: string;
+    let studentUser: User;
+    let studentToken: string;
+    let classroom: Classroom;
+
+    beforeEach(async () => {
+      const {
+        user: teacherUserData,
+        teacher,
+        plainTextPassword,
+      } = await UserFactory.createTeacher();
+      teacherUser = await createTeacherInDb(dbService, teacherUserData, teacher);
+      teacherToken = await getAccessToken(httpServer, teacherUser.email, plainTextPassword);
+
+      const { user: studentUserData, student } = await UserFactory.createStudent();
+      studentUser = await createStudentInDb(dbService, studentUserData, student);
+      studentToken = await getAccessToken(httpServer, studentUser.email, plainTextPassword);
+      classroom = await createClassroomInDb(dbService, teacherUser.teacher!);
+
+      const mailService = app.get<MailService>(MailService);
+      jest.spyOn(mailService, "sendEmail").mockResolvedValue(undefined);
+    });
+
+    it("should enroll student successfully when teacher is authenticated", async () => {
+      const enrollmentDto = { studentId: studentUser.student!.id };
+
+      const response = await request(httpServer)
+        .post(`/classrooms/${classroom.id}/enroll`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(enrollmentDto)
+        .expect(HttpStatus.CREATED);
+
+      expect(response.body).toBeTruthy();
+
+      const enrollment = await dbService.findOne(Enrollment, {
+        student: studentUser.student,
+        classroom,
+      });
+      expect(enrollment).not.toBeNull();
+
+      const mailService = app.get<MailService>(MailService);
+      expect(mailService.sendEmail).toHaveBeenCalledWith(
+        studentUser.email,
+        "Enrollment Done",
+        expect.stringContaining(
+          `Hello ${studentUser.firstName}! You are enrolled in the clasroom.`,
+        ),
+      );
+    });
+    it("should return 409 Conflict when trying to enroll an already enrolled student", async () => {
+      const enrollmentDto = { studentId: studentUser.student!.id };
+
+      await request(httpServer)
+        .post(`/classrooms/${classroom.id}/enroll`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(enrollmentDto)
+        .expect(HttpStatus.CREATED);
+
+      const response = await request(httpServer)
+        .post(`/classrooms/${classroom.id}/enroll`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(enrollmentDto)
+        .expect(HttpStatus.CONFLICT);
+
+      expect(response.body.message).toBe("Student is already enrolled in this classroom");
+    });
+
+    it("should return 403 Forbidden when student tries to enroll another student", async () => {
+      const enrollmentDto = { studentId: studentUser.student!.id };
+
+      await request(httpServer)
+        .post(`/classrooms/${classroom.id}/enroll`)
+        .set("Authorization", `Bearer ${studentToken}`)
+        .send(enrollmentDto)
+        .expect(HttpStatus.FORBIDDEN);
+    });
+
+    it("should return 401 Unauthorized when no token is provided", async () => {
+      const enrollmentDto = { studentId: studentUser.student!.id };
+
+      await request(httpServer)
+        .post(`/classrooms/${classroom.id}/enroll`)
+        .send(enrollmentDto)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it("should return 404 Not Found when classroom doesn't exist", async () => {
+      const nonExistentId = 9999;
+      const enrollmentDto = { studentId: studentUser.student!.id };
+
+      await request(httpServer)
+        .post(`/classrooms/${nonExistentId}/enroll`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(enrollmentDto)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it("should return 404 Not Found when student doesn't exist", async () => {
+      const nonExistentStudentId = 9999;
+      const enrollmentDto = { studentId: nonExistentStudentId };
+
+      await request(httpServer)
+        .post(`/classrooms/${classroom.id}/enroll`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(enrollmentDto)
         .expect(HttpStatus.NOT_FOUND);
     });
   });
