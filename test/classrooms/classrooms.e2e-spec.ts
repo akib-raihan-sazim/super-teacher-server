@@ -180,4 +180,110 @@ describe("ClassroomsController (e2e)", () => {
         .expect(HttpStatus.NOT_FOUND);
     });
   });
+
+  describe("PUT /classrooms/:id", () => {
+    let teacherUser: User;
+    let teacherToken: string;
+    let studentUser: User;
+    let studentToken: string;
+    let classroom: Classroom;
+
+    beforeEach(async () => {
+      const {
+        user: teacherUserData,
+        teacher,
+        plainTextPassword: teacherPassword,
+      } = await UserFactory.createTeacher();
+      teacherUser = await createTeacherInDb(dbService, teacherUserData, teacher);
+      teacherToken = await getAccessToken(httpServer, teacherUser.email, teacherPassword);
+
+      const {
+        user: studentUserData,
+        student,
+        plainTextPassword: studentPassword,
+      } = await UserFactory.createStudent();
+      studentUser = await createStudentInDb(dbService, studentUserData, student);
+      studentToken = await getAccessToken(httpServer, studentUser.email, studentPassword);
+
+      classroom = await createClassroomInDb(dbService, teacherUser.teacher!);
+    });
+
+    it("should update classroom successfully when teacher is authenticated", async () => {
+      const updateClassroomDto = {
+        title: "Updated Math 101",
+        subject: "Advanced Mathematics",
+        classTime: new Date().toISOString(),
+        days: ["Monday", "Wednesday", "Friday"],
+      };
+
+      const response = await request(httpServer)
+        .put(`/classrooms/${classroom.id}`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(updateClassroomDto)
+        .expect(HttpStatus.OK);
+
+      expect(response.body).toMatchObject({
+        id: classroom.id,
+        title: updateClassroomDto.title,
+        subject: updateClassroomDto.subject,
+        classTime: updateClassroomDto.classTime,
+        days: updateClassroomDto.days,
+        teacher: expect.objectContaining({
+          id: teacherUser.teacher!.id,
+          user: expect.objectContaining({
+            id: teacherUser.id,
+          }),
+        }),
+      });
+    });
+
+    it("should return 403 Forbidden when student tries to update the classroom", async () => {
+      const updateClassroomDto = {
+        title: "Updated by Student",
+      };
+
+      await request(httpServer)
+        .put(`/classrooms/${classroom.id}`)
+        .set("Authorization", `Bearer ${studentToken}`)
+        .send(updateClassroomDto)
+        .expect(HttpStatus.FORBIDDEN);
+    });
+
+    it("should return 401 Unauthorized when no token is provided", async () => {
+      const updateClassroomDto = {
+        title: "Updated without Token",
+      };
+
+      await request(httpServer)
+        .put(`/classrooms/${classroom.id}`)
+        .send(updateClassroomDto)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it("should return 404 Not Found when classroom doesn't exist", async () => {
+      const nonExistentId = 9999;
+      const updateClassroomDto = {
+        title: "Update Non-existent Classroom",
+      };
+
+      await request(httpServer)
+        .put(`/classrooms/${nonExistentId}`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(updateClassroomDto)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it("should return 400 Bad Request when invalid data is provided", async () => {
+      const invalidUpdateClassroomDto = {
+        title: "",
+        classTime: "invalid-date",
+      };
+
+      await request(httpServer)
+        .put(`/classrooms/${classroom.id}`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(invalidUpdateClassroomDto)
+        .expect(HttpStatus.BAD_REQUEST);
+    });
+  });
 });
