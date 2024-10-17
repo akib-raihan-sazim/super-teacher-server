@@ -5,6 +5,7 @@ import { EntityManager, IDatabaseDriver, Connection, MikroORM } from "@mikro-orm
 import request from "supertest";
 
 import { Classroom } from "@/common/entities/classrooms.entity";
+import { Enrollment } from "@/common/entities/enrollments.entity";
 import { User } from "@/common/entities/users.entity";
 
 import { bootstrapTestServer } from "../utils/bootstrap";
@@ -177,6 +178,129 @@ describe("ClassroomsController (e2e)", () => {
       await request(httpServer)
         .get(`/classrooms/${nonExistentId}`)
         .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+  });
+
+  describe("DELETE /classrooms/:id/unenroll", () => {
+    let teacherUser: User;
+    let teacherToken: string;
+    let anotherTeacherUser: User;
+    let anotherTeacherToken: string;
+    let studentUser: User;
+    let classroom: Classroom;
+    let enrollment: Enrollment;
+
+    beforeEach(async () => {
+      const {
+        user: teacherUserData,
+        teacher,
+        plainTextPassword,
+      } = await UserFactory.createTeacher();
+      teacherUser = await createTeacherInDb(dbService, teacherUserData, teacher);
+      teacherToken = await getAccessToken(httpServer, teacherUser.email, plainTextPassword);
+
+      const {
+        user: anotherTeacherUserData,
+        teacher: anotherTeacher,
+        plainTextPassword: anotherPlainTextPassword,
+      } = await UserFactory.createTeacher();
+      anotherTeacherUser = await createTeacherInDb(
+        dbService,
+        anotherTeacherUserData,
+        anotherTeacher,
+      );
+      anotherTeacherToken = await getAccessToken(
+        httpServer,
+        anotherTeacherUser.email,
+        anotherPlainTextPassword,
+      );
+
+      const { user: studentUserData, student } = await UserFactory.createStudent();
+      studentUser = await createStudentInDb(dbService, studentUserData, student);
+      classroom = await createClassroomInDb(dbService, teacherUser.teacher!);
+
+      enrollment = dbService.create(Enrollment, {
+        student: studentUser.student!,
+        classroom: classroom,
+      });
+      await dbService.persistAndFlush(enrollment);
+    });
+    it("should unenroll student successfully when teacher is authenticated", async () => {
+      const unenrollDto = { studentId: studentUser.student!.id };
+
+      await request(httpServer)
+        .delete(`/classrooms/${classroom.id}/unenroll`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(unenrollDto)
+        .expect(HttpStatus.OK);
+
+      await dbService.refresh(enrollment);
+      const deletedEnrollment = await dbService.findOne(Enrollment, { id: enrollment.id });
+      expect(deletedEnrollment).toBeNull();
+    });
+
+    it("should return 404 Not Found when trying to unenroll a student who isn't enrolled", async () => {
+      const { user: unenrollStudentData, student: unenrolledStudent } =
+        await UserFactory.createStudent();
+      const unenrolledStudentUser = await createStudentInDb(
+        dbService,
+        unenrollStudentData,
+        unenrolledStudent,
+      );
+      const unenrollDto = { studentId: unenrolledStudentUser.student!.id };
+
+      await request(httpServer)
+        .delete(`/classrooms/${classroom.id}/unenroll`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(unenrollDto)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it("should return 401 Unauthorized when another teacher tries to unenroll a student", async () => {
+      const unenrollDto = { studentId: studentUser.student!.id };
+
+      await request(httpServer)
+        .delete(`/classrooms/${classroom.id}/unenroll`)
+        .set("Authorization", `Bearer ${anotherTeacherToken}`)
+        .send(unenrollDto)
+        .expect(HttpStatus.UNAUTHORIZED);
+
+      const existingEnrollment = await dbService.findOne(Enrollment, { id: enrollment.id });
+      expect(existingEnrollment).not.toBeNull();
+    });
+
+    it("should return 401 Unauthorized when no token is provided", async () => {
+      const unenrollDto = { studentId: studentUser.student!.id };
+
+      await request(httpServer)
+        .delete(`/classrooms/${classroom.id}/unenroll`)
+        .send(unenrollDto)
+        .expect(HttpStatus.UNAUTHORIZED);
+
+      const existingEnrollment = await dbService.findOne(Enrollment, { id: enrollment.id });
+      expect(existingEnrollment).not.toBeNull();
+    });
+
+    it("should return 404 Not Found when classroom doesn't exist", async () => {
+      const nonExistentId = 9999;
+      const unenrollDto = { studentId: studentUser.student!.id };
+
+      await request(httpServer)
+        .delete(`/classrooms/${nonExistentId}/unenroll`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(unenrollDto)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it("should return 404 Not Found when student doesn't exist", async () => {
+      const nonExistentStudentId = 9999;
+      const unenrollDto = { studentId: nonExistentStudentId };
+
+      await request(httpServer)
+        .delete(`/classrooms/${classroom.id}/unenroll`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(unenrollDto)
         .expect(HttpStatus.NOT_FOUND);
     });
   });
