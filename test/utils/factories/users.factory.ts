@@ -1,6 +1,5 @@
-import { EntityManager } from "@mikro-orm/core";
-
 import { faker } from "@faker-js/faker";
+import * as bcrypt from "bcrypt";
 
 import { Student } from "@/common/entities/students.entity";
 import { Teacher } from "@/common/entities/teachers.entity";
@@ -9,84 +8,79 @@ import { EEducationLevel, EMedium } from "@/common/enums/students.enums";
 import { EUserType } from "@/common/enums/users.enums";
 
 export class UserFactory {
-  static async createStudent(
-    em: EntityManager,
-    educationLevel: EEducationLevel = EEducationLevel.SCHOOL,
-  ): Promise<User> {
-    const user = em.create(User, {
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      email: faker.internet.email(),
-      password: faker.internet.password(),
-      gender: faker.person.gender(),
-      userType: EUserType.STUDENT,
-    });
+  static async createStudent(educationLevel: EEducationLevel = EEducationLevel.SCHOOL): Promise<{
+    user: User;
+    student: Student;
+    plainTextPassword: string;
+  }> {
+    const plainTextPassword = "TestPassword123!";
+    const hashedPassword = await bcrypt.hash(plainTextPassword, 10);
 
-    const studentData: Omit<Student, "id" | "createdAt" | "updatedAt"> = {
-      educationLevel,
-      phoneNo: faker.phone.number(),
-      address: faker.location.streetAddress(),
-      user,
-      medium: EMedium.ENGLISH,
-      class: "10",
-      degree: undefined,
-      degreeName: undefined,
-      semester: undefined,
-    };
+    const user = new User();
+    user.firstName = faker.person.firstName();
+    user.lastName = faker.person.lastName();
+    user.email = faker.internet.email();
+    user.password = hashedPassword;
+    user.gender = faker.person.gender();
+    user.userType = EUserType.STUDENT;
+
+    const student = new Student();
+    student.user = user;
+    student.educationLevel = educationLevel;
+    student.phoneNo = faker.phone.number();
+    student.address = faker.location.streetAddress();
+    student.medium =
+      educationLevel !== EEducationLevel.UNIVERSITY
+        ? faker.helpers.arrayElement(Object.values(EMedium))
+        : EMedium.NONE;
 
     if (educationLevel === EEducationLevel.SCHOOL || educationLevel === EEducationLevel.COLLEGE) {
-      studentData.medium = faker.helpers.arrayElement(Object.values(EMedium));
-      studentData.class = faker.helpers.arrayElement(["8", "9", "10", "11", "12"]);
+      student.class = faker.helpers.arrayElement(["8", "9", "10", "11", "12"]);
     } else if (educationLevel === EEducationLevel.UNIVERSITY) {
-      studentData.medium = EMedium.NONE;
-      studentData.class = undefined;
-      studentData.degree = faker.helpers.arrayElement(["Bachelor", "Master"]);
-      studentData.degreeName = faker.helpers.arrayElement([
+      student.degree = faker.helpers.arrayElement(["Bachelor", "Master"]);
+      student.degreeName = faker.helpers.arrayElement([
         "Computer Science",
         "Economics",
         "Business Administration",
         "Electrical Engineering",
       ]);
-      studentData.semester = faker.helpers.arrayElement(["1", "2", "3", "4", "5", "6", "7", "8"]);
+      student.semester = faker.helpers.arrayElement(["1", "2", "3", "4", "5", "6", "7", "8"]);
     }
 
-    const student = em.create(Student, studentData);
-    user.student = student;
-
-    await em.persistAndFlush([user, student]);
-    return user;
+    return { user, student, plainTextPassword };
   }
 
-  static async createTeacher(em: EntityManager): Promise<User> {
-    const user = em.create(User, {
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      email: faker.internet.email(),
-      password: await faker.internet.password(),
-      gender: faker.person.gender(),
-      userType: EUserType.TEACHER,
-    });
+  static async createTeacher(): Promise<{
+    user: User;
+    teacher: Teacher;
+    plainTextPassword: string;
+  }> {
+    const plainTextPassword = "TestPassword123!";
+    const hashedPassword = await bcrypt.hash(plainTextPassword, 10);
 
-    const teacherData: Omit<Teacher, "id" | "createdAt" | "updatedAt"> = {
-      highestEducationLevel: faker.helpers.arrayElement(["Bachelors", "Masters", "PhD"]),
-      majorSubject: faker.helpers.arrayElement([
-        "Mathematics",
-        "Physics",
-        "Chemistry",
-        "Biology",
-        "Computer Science",
-      ]),
-      subjectsToTeach: faker.helpers.arrayElements(
-        ["Mathematics", "Physics", "Chemistry", "Biology", "Computer Science"],
-        { min: 1, max: 3 },
-      ),
-      user,
-    };
+    const user = new User();
+    user.firstName = faker.person.firstName();
+    user.lastName = faker.person.lastName();
+    user.email = faker.internet.email();
+    user.password = hashedPassword;
+    user.gender = faker.person.gender();
+    user.userType = EUserType.TEACHER;
 
-    const teacher = em.create(Teacher, teacherData);
-    user.teacher = teacher;
+    const teacher = new Teacher();
+    teacher.user = user;
+    teacher.highestEducationLevel = faker.helpers.arrayElement(["Bachelors", "Masters", "PhD"]);
+    teacher.majorSubject = faker.helpers.arrayElement([
+      "Mathematics",
+      "Physics",
+      "Chemistry",
+      "Biology",
+      "Computer Science",
+    ]);
+    teacher.subjectsToTeach = faker.helpers.arrayElements(
+      ["Mathematics", "Physics", "Chemistry", "Biology", "Computer Science"],
+      { min: 1, max: 3 },
+    );
 
-    await em.persistAndFlush([user, teacher]);
-    return user;
+    return { user, teacher, plainTextPassword };
   }
 }
