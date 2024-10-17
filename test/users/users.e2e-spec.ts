@@ -155,13 +155,11 @@ describe("UsersController (e2e)", () => {
 
   describe("PUT /users/user-details", () => {
     it("should update student details successfully", async () => {
-      const user = await UserFactory.createStudent(dbService, EEducationLevel.SCHOOL);
-      const token = jwtService.sign({
-        id: user.id,
-        firstName: user.firstName,
-        email: user.email,
-        userType: user.userType,
-      });
+      const { user, student, plainTextPassword } = await UserFactory.createStudent(
+        EEducationLevel.SCHOOL,
+      );
+      const createdUser = await createStudentInDb(dbService, user, student);
+      const token = await getAccessToken(httpServer, createdUser.email, plainTextPassword);
 
       const editUserDto = {
         firstName: "UpdatedFirstName",
@@ -201,13 +199,10 @@ describe("UsersController (e2e)", () => {
     });
 
     it("should update teacher details successfully", async () => {
-      const user = await UserFactory.createTeacher(dbService);
-      const token = jwtService.sign({
-        id: user.id,
-        firstName: user.firstName,
-        email: user.email,
-        userType: user.userType,
-      });
+      const { user, teacher, plainTextPassword } = await UserFactory.createTeacher();
+      const createdUser = await createTeacherInDb(dbService, user, teacher);
+
+      const token = await getAccessToken(httpServer, createdUser.email, plainTextPassword);
 
       const editUserDto = {
         firstName: "UpdatedTeacherName",
@@ -247,13 +242,11 @@ describe("UsersController (e2e)", () => {
     });
 
     it("should return 400 Bad Request when invalid data is provided", async () => {
-      const user = await UserFactory.createStudent(dbService, EEducationLevel.SCHOOL);
-      const token = jwtService.sign({
-        id: user.id,
-        firstName: user.firstName,
-        email: user.email,
-        userType: user.userType,
-      });
+      const { user, student, plainTextPassword } = await UserFactory.createStudent(
+        EEducationLevel.SCHOOL,
+      );
+      const createdUser = await createStudentInDb(dbService, user, student);
+      const token = await getAccessToken(httpServer, createdUser.email, plainTextPassword);
 
       const invalidEditUserDto = {
         firstName: "",
