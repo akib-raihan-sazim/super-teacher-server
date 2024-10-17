@@ -5,6 +5,7 @@ import { EntityManager, IDatabaseDriver, Connection, MikroORM } from "@mikro-orm
 import request from "supertest";
 
 import { Classroom } from "@/common/entities/classrooms.entity";
+import { Enrollment } from "@/common/entities/enrollments.entity";
 import { User } from "@/common/entities/users.entity";
 
 import { bootstrapTestServer } from "../utils/bootstrap";
@@ -178,6 +179,121 @@ describe("ClassroomsController (e2e)", () => {
         .get(`/classrooms/${nonExistentId}`)
         .set("Authorization", `Bearer ${teacherToken}`)
         .expect(HttpStatus.NOT_FOUND);
+    });
+  });
+
+  describe("GET /classrooms", () => {
+    let teacherUser: User;
+    let teacherToken: string;
+    let studentUser: User;
+    let studentToken: string;
+    let teacherClassrooms: Classroom[];
+    let studentClassrooms: Classroom[];
+
+    beforeEach(async () => {
+      const {
+        user: teacherUserData,
+        teacher,
+        plainTextPassword: teacherPassword,
+      } = await UserFactory.createTeacher();
+      teacherUser = await createTeacherInDb(dbService, teacherUserData, teacher);
+      teacherToken = await getAccessToken(httpServer, teacherUser.email, teacherPassword);
+
+      const {
+        user: studentUserData,
+        student,
+        plainTextPassword: studentPassword,
+      } = await UserFactory.createStudent();
+      studentUser = await createStudentInDb(dbService, studentUserData, student);
+      studentToken = await getAccessToken(httpServer, studentUser.email, studentPassword);
+
+      teacherClassrooms = await Promise.all([
+        createClassroomInDb(dbService, teacherUser.teacher!),
+        createClassroomInDb(dbService, teacherUser.teacher!),
+      ]);
+
+      const { user: anotherTeacherUser, teacher: anotherTeacher } =
+        await UserFactory.createTeacher();
+      const anotherTeacherUserCreated = await createTeacherInDb(
+        dbService,
+        anotherTeacherUser,
+        anotherTeacher,
+      );
+
+      studentClassrooms = await Promise.all([
+        createClassroomInDb(dbService, anotherTeacherUserCreated.teacher!),
+        createClassroomInDb(dbService, anotherTeacherUserCreated.teacher!),
+      ]);
+
+      for (const classroom of studentClassrooms) {
+        const enrollment = dbService.create(Enrollment, {
+          student: studentUser.student!,
+          classroom: classroom,
+        });
+        await dbService.persistAndFlush(enrollment);
+      }
+    });
+
+    it("should get classrooms for teacher", async () => {
+      const response = await request(httpServer)
+        .get("/classrooms")
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(response.body).toHaveLength(teacherClassrooms.length);
+
+      expect(response.body).toEqual(
+        expect.arrayContaining(
+          teacherClassrooms.map((classroom) =>
+            expect.objectContaining({
+              id: classroom.id,
+              title: classroom.title,
+              subject: classroom.subject,
+              classTime: classroom.classTime.toISOString(),
+              days: classroom.days,
+              teacher: expect.objectContaining({
+                id: teacherUser.teacher!.id,
+                user: expect.objectContaining({
+                  id: teacherUser.id,
+                }),
+              }),
+            }),
+          ),
+        ),
+      );
+    });
+
+    it("should get classrooms for student", async () => {
+      const response = await request(httpServer)
+        .get("/classrooms")
+        .set("Authorization", `Bearer ${studentToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(response.body).toHaveLength(studentClassrooms.length);
+
+      expect(response.body).toEqual(
+        expect.arrayContaining(
+          studentClassrooms.map((classroom) =>
+            expect.objectContaining({
+              id: classroom.id,
+              title: classroom.title,
+              subject: classroom.subject,
+              classTime: classroom.classTime.toISOString(),
+              days: classroom.days,
+              teacher: expect.objectContaining({
+                id: expect.any(Number),
+                user: expect.objectContaining({
+                  id: expect.any(Number),
+                }),
+              }),
+            }),
+          ),
+        ),
+      );
+    });
+
+    it("should return 401 Unauthorized when no token is provided", async () => {
+      await request(httpServer).get("/classrooms").expect(HttpStatus.UNAUTHORIZED);
     });
   });
 });
