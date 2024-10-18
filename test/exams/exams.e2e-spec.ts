@@ -14,6 +14,7 @@ import { truncateTables } from "../utils/db";
 import { UserFactory } from "../utils/factories/users.factory";
 import { getAccessToken } from "../utils/helpers/access-token.helpers";
 import { createClassroomInDb } from "../utils/helpers/create-classroom-in-db.helpers";
+import { createExamInDb } from "../utils/helpers/create-exam-in-db.helpers";
 import { createStudentInDb, createTeacherInDb } from "../utils/helpers/create-user-in-db.helpers";
 import { THttpServer } from "../utils/types";
 
@@ -53,6 +54,17 @@ describe("ExamsController (e2e)", () => {
     teacherToken = await getAccessToken(httpServer, teacherUser.email, teacherPassword);
 
     classroom = await createClassroomInDb(dbService, teacherUser.teacher!);
+
+    await createExamInDb(dbService, classroom, {
+      title: "Midterm Exam",
+      instruction: "Complete the exam.",
+      date: new Date(),
+    });
+    await createExamInDb(dbService, classroom, {
+      title: "Final Exam",
+      instruction: "Complete all questions.",
+      date: new Date(),
+    });
   });
 
   describe("POST /:classroomId/exams", () => {
@@ -129,6 +141,66 @@ describe("ExamsController (e2e)", () => {
         .set("Authorization", `Bearer ${teacherToken}`)
         .send(createExamDto)
         .expect(HttpStatus.BAD_REQUEST);
+    });
+  });
+
+  describe("GET /classroom/:classroomId/exams", () => {
+    it("should retrieve exams for the given classroom", async () => {
+      const response = await request(httpServer)
+        .get(`/classrooms/${classroom.id}/exams`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(response.body.length).toBe(2);
+      expect(response.body[0]).toMatchObject({
+        title: expect.any(String),
+        instruction: expect.any(String),
+        date: expect.any(String),
+        classroom: expect.objectContaining({ id: classroom.id }),
+      });
+    });
+
+    it("should return an empty array if no exams are found", async () => {
+      const newClassroom = await createClassroomInDb(dbService, teacherUser.teacher!);
+
+      const response = await request(httpServer)
+        .get(`/classrooms/${newClassroom.id}/exams`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(response.body).toEqual([]);
+    });
+
+    it("should return 404 Not Found for a non-existent classroom", async () => {
+      const nonExistentClassroomId = 9999;
+
+      await request(httpServer)
+        .get(`/classrooms/${nonExistentClassroomId}/exams`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it("should return 401 Unauthorized when no token is provided", async () => {
+      await request(httpServer)
+        .get(`/classrooms/${classroom.id}/exams`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it("should allow a student to retrieve exams for their classroom", async () => {
+      const {
+        user: studentUserData,
+        student,
+        plainTextPassword: studentPassword,
+      } = await UserFactory.createStudent();
+      const studentUser = await createStudentInDb(dbService, studentUserData, student);
+      const studentToken = await getAccessToken(httpServer, studentUser.email, studentPassword);
+
+      const response = await request(httpServer)
+        .get(`/classrooms/${classroom.id}/exams`)
+        .set("Authorization", `Bearer ${studentToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(response.body.length).toBe(2);
     });
   });
 });
