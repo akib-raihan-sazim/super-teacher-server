@@ -309,4 +309,61 @@ describe("ExamsController (e2e)", () => {
         .expect(HttpStatus.BAD_REQUEST);
     });
   });
+
+  describe("DELETE /exams/:examId", () => {
+    let examId: number;
+
+    beforeEach(async () => {
+      const exam = await createExamInDb(dbService, classroom, {
+        title: "Exam to Delete",
+        instruction: "This exam will be deleted.",
+        date: new Date(),
+      });
+      examId = exam.id;
+    });
+
+    it("should delete an exam successfully", async () => {
+      await request(httpServer)
+        .delete(`/classrooms/exams/${examId}`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.OK);
+
+      dbService.clear();
+
+      const deletedExam = await dbService.findOne(Exam, { id: examId });
+      expect(deletedExam).toBeNull();
+    });
+
+    it("should return 404 Not Found when trying to delete a non-existing exam", async () => {
+      const nonExistentExamId = 9999;
+      await request(httpServer)
+        .delete(`/classrooms/exams/${nonExistentExamId}`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it("should return 401 Unauthorized when no token is provided", async () => {
+      await request(httpServer)
+        .delete(`/classrooms/exams/${examId}`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it("should return 403 Forbidden when a non-teacher tries to delete an exam", async () => {
+      const {
+        user: studentUserData,
+        student,
+        plainTextPassword: studentPassword,
+      } = await UserFactory.createStudent();
+      const studentUser = await createStudentInDb(dbService, studentUserData, student);
+      const studentToken = await getAccessToken(httpServer, studentUser.email, studentPassword);
+
+      await request(httpServer)
+        .delete(`/classrooms/exams/${examId}`)
+        .set("Authorization", `Bearer ${studentToken}`)
+        .expect(HttpStatus.FORBIDDEN);
+
+      const exam = await dbService.findOne(Exam, { id: examId });
+      expect(exam).not.toBeNull();
+    });
+  });
 });
