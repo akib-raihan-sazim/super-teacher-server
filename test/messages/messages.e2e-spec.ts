@@ -121,4 +121,68 @@ describe("MessagesController (e2e)", () => {
       });
     });
   });
+
+  describe("GET classroom/:classroomId/messages", () => {
+    let teacherUser: User;
+    let teacherToken: string;
+    let classroom: Classroom;
+    let messageDto: CreateMessageDto;
+
+    beforeEach(async () => {
+      const {
+        user: teacherUserData,
+        teacher,
+        plainTextPassword: teacherPassword,
+      } = await UserFactory.createTeacher();
+      teacherUser = await createTeacherInDb(dbService, teacherUserData, teacher);
+      teacherToken = await getAccessToken(httpServer, teacherUser.email, teacherPassword);
+
+      classroom = await createClassroomInDb(dbService, teacherUser.teacher!);
+
+      messageDto = {
+        content: "Test message content",
+        classroomId: classroom.id,
+      };
+
+      await request(httpServer)
+        .post("/messages")
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(messageDto)
+        .expect(HttpStatus.CREATED);
+    });
+
+    it("should retrieve messages for the classroom", async () => {
+      const response = await request(httpServer)
+        .get(`/messages/classroom/${classroom.id}/messages`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(response.body).toHaveLength(1);
+      expect(response.body[0]).toMatchObject({
+        content: messageDto.content,
+        classroom: expect.objectContaining({ id: classroom.id }),
+        sender: expect.objectContaining({ id: teacherUser.id }),
+      });
+    });
+
+    it("should return an empty array if no messages exist for the classroom", async () => {
+      const newClassroom = await createClassroomInDb(dbService, teacherUser.teacher!);
+
+      const response = await request(httpServer)
+        .get(`/messages/classroom/${newClassroom.id}/messages`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.OK);
+
+      expect(response.body).toHaveLength(0);
+    });
+
+    it("should return 404 if classroom does not exist", async () => {
+      const nonExistentClassroomId = 9999;
+
+      await request(httpServer)
+        .get(`/messages/classroom/${nonExistentClassroomId}/messages`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+  });
 });
