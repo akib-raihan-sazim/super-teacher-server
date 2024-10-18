@@ -203,4 +203,110 @@ describe("ExamsController (e2e)", () => {
       expect(response.body.length).toBe(2);
     });
   });
+
+  describe("PUT /classrooms/:classroomId/exams/:examId", () => {
+    let examId: number;
+    beforeEach(async () => {
+      const exam = await createExamInDb(dbService, classroom, {
+        title: "Midterm Exam",
+        instruction: "Complete the exam.",
+        date: new Date(),
+      });
+      examId = exam.id;
+    });
+
+    it("should update an exam successfully", async () => {
+      const updateExamDto = {
+        title: "Updated Midterm Exam",
+        instruction: "Please solve all questions carefully with the updated instructions.",
+        date: new Date(),
+      };
+
+      const response = await request(httpServer)
+        .put(`/classrooms/exams/${examId}`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(updateExamDto)
+        .expect(HttpStatus.OK);
+
+      dbService.clear();
+
+      const updatedExam = await dbService.findOne(Exam, { id: examId });
+
+      expect(updatedExam).toBeDefined();
+      expect(updatedExam?.title).toBe(updateExamDto.title);
+      expect(updatedExam?.instruction).toBe(updateExamDto.instruction);
+      expect(new Date(updatedExam!.date).toISOString()).toBe(updateExamDto.date.toISOString());
+
+      expect(response.body).toMatchObject({
+        id: examId,
+        title: updateExamDto.title,
+        instruction: updateExamDto.instruction,
+        date: expect.any(String),
+        classroom: expect.objectContaining({ id: classroom.id }),
+      });
+    });
+
+    it("should return 404 Not Found when trying to update a non-existing exam", async () => {
+      const updateExamDto = {
+        title: "Updated Exam",
+        instruction: "Updated instructions.",
+        date: new Date().toISOString(),
+      };
+
+      await request(httpServer)
+        .put(`/classrooms/exams/9999`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(updateExamDto)
+        .expect(HttpStatus.NOT_FOUND);
+    });
+
+    it("should return 401 Unauthorized when no token is provided", async () => {
+      const updateExamDto = {
+        title: "Updated Exam",
+        instruction: "Updated instructions.",
+        date: new Date().toISOString(),
+      };
+
+      await request(httpServer)
+        .put(`/classrooms/exams/${examId}`)
+        .send(updateExamDto)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it("should return 403 Forbidden when a non-teacher tries to update an exam", async () => {
+      const {
+        user: studentUserData,
+        student,
+        plainTextPassword: studentPassword,
+      } = await UserFactory.createStudent();
+      const studentUser = await createStudentInDb(dbService, studentUserData, student);
+      const studentToken = await getAccessToken(httpServer, studentUser.email, studentPassword);
+
+      const updateExamDto = {
+        title: "Updated Midterm Exam",
+        instruction: "Please solve all questions carefully with the updated instructions.",
+        date: new Date().toISOString(),
+      };
+
+      await request(httpServer)
+        .put(`/classrooms/exams/${examId}`)
+        .set("Authorization", `Bearer ${studentToken}`)
+        .send(updateExamDto)
+        .expect(HttpStatus.FORBIDDEN);
+    });
+
+    it("should return 400 Bad Request when invalid data is provided", async () => {
+      const invalidUpdateExamDto = {
+        title: "",
+        instruction: "Valid instruction",
+        date: "invalid-date",
+      };
+
+      await request(httpServer)
+        .put(`/classrooms/exams/${examId}`)
+        .set("Authorization", `Bearer ${teacherToken}`)
+        .send(invalidUpdateExamDto)
+        .expect(HttpStatus.BAD_REQUEST);
+    });
+  });
 });
